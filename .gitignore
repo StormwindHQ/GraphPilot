@@ -1,0 +1,13 @@
+# docker-compose openwhisk directories ignore
+openwhisk-master
+openwhisk-master*
+openwhisk-catalog
+compose/*.tar.gz
+
+# cli
+bin/
+
+*.iml
+.idea
+.vscode
+**/.sts4-cache
