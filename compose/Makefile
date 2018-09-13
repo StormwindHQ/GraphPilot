@@ -48,7 +48,7 @@ endif
 # 2. Download the wsk cli
 # 3. pulls all the Docker images
 # 4.
-## Boostraps wsk cli, docker images and run the compose stack
+## Bootstraps wsk cli, docker images and run the compose stack
 compose-bootstrap: compose-download \
  			 download-cli \
  			 compose-docker_pull \
