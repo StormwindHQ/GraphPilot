@@ -28,7 +28,6 @@ help:
 	} \
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)
 	@echo
-	@echo
 	@echo Tools:
 	@echo
 	@awk '/^[a-zA-Z\/\-\_0-9]+:/ { \
