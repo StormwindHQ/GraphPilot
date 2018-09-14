@@ -220,3 +220,14 @@ services:
       volumes:
         - .:/home/node/app
         - /home/node/app/node_modules
+
+  ngrok:
+    image: wernight/ngrok
+    container_name: ngrok
+    environment:
+      - NGROK_PROTOCOL=http
+      - NGROK_PORT=node-proxy:8000
+    ports:
+      - "0.0.0.0:4040:4040"
+    links:
+      - node-proxy
