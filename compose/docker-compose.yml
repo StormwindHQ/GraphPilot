@@ -196,3 +196,26 @@ services:
       links:
         - kafka
         - kafka-rest
+
+  node-proxy:
+      image: node-proxy
+      container_name: node-proxy
+      command: ["node", "proxy/proxy.js"]
+      build:
+        context: .
+        dockerfile: ../.docker/node.dockerfile
+        args:
+          SRC: ./proxy
+      ports:
+        - "8000:8000"
+      environment:
+        - TARGET_PROTOCOL=https
+        - TARGET_HOST=apigateway
+        - TARGET_PORT=443
+        - SRC_PORT=8000
+        - SECURE=false
+      links:
+        - apigateway
+      volumes:
+        - .:/home/node/app
+        - /home/node/app/node_modules

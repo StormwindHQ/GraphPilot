@@ -1,0 +1,22 @@
+{
+  "name": "stormwind-new",
+  "version": "1.0.0",
+  "description": "Stormwind Node Environment",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StormwindHQ/Stormwind-New.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/StormwindHQ/Stormwind-New/issues"
+  },
+  "homepage": "https://github.com/StormwindHQ/Stormwind-New#readme",
+  "dependencies": {
+    "http-proxy": "^1.17.0"
+  }
+}

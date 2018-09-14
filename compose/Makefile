@@ -70,6 +70,9 @@ compose-run: compose-print-host \
  			 compose-init-whisk-cli \
  			 compose-init-api-management
 
+## Build the OpenWhisk docker-compose services
+compose-build: compose-build-docker-compose
+
 .PHONY: compose-stop
 ## Stops all the docker-compose resources
 compose-stop:
@@ -280,6 +283,12 @@ compose-start-docker-compose:
 	echo "Testing docker compose file ${COMPOSE_FILE}"
 	exit
 	$(shell cat ~/tmp/openwhisk/local.env) docker-compose -f ${COMPOSE_FILE} --project-name openwhisk up 2>&1 > ~/tmp/openwhisk/docker-compose.log &
+
+.PHONY: compose-build-docker-compose
+compose-build-docker-compose:
+	echo "Testing docker compose file ${COMPOSE_FILE}"
+	exit
+	$(shell cat ~/tmp/openwhisk/local.env) docker-compose -f ${COMPOSE_FILE} --project-name openwhisk build
 
 .PHONY: compose-init-couchdb
 compose-init-couchdb:
