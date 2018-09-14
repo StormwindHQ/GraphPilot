@@ -1,0 +1,22 @@
+{
+  "name": "stormwind-new",
+  "version": "1.0.0",
+  "description": "[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://travis-ci.org/apache/incubator-openwhisk-devtools.svg?branch=master)](https://travis-ci.org/apache/incubator-openwhisk-devtools)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StormwindHQ/Stormwind-New.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/StormwindHQ/Stormwind-New/issues"
+  },
+  "homepage": "https://github.com/StormwindHQ/Stormwind-New#readme",
+  "devDependencies": {
+    "http-proxy": "^1.17.0"
+  }
+}

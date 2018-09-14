@@ -11,3 +11,6 @@ bin/
 .idea
 .vscode
 **/.sts4-cache
+
+# Node
+node_modules/
