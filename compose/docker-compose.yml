@@ -224,6 +224,7 @@ services:
   ngrok:
     image: wernight/ngrok
     container_name: ngrok
+    restart: on-failure
     environment:
       - NGROK_PROTOCOL=http
       - NGROK_PORT=node-proxy:8000
