@@ -200,6 +200,7 @@ services:
   node-proxy:
       image: node-proxy
       container_name: node-proxy
+      restart: on-failure
       command: ["node", "proxy/proxy.js"]
       build:
         context: .
