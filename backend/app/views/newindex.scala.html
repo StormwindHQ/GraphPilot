@@ -1,0 +1,53 @@
+@(catForm: Form[Cat], cats: Seq[Cat], dogs: Seq[Dog])(implicit assetsFinder: AssetsFinder, requestHeader: MessagesRequestHeader)
+
+@import views.html.helper._
+
+@main("Cat & Dog database", assetsFinder) {
+    <div>
+        <div id="cats">
+            <h2>Insert a kitty cat here:</h2>
+            @form(routes.HomeController.insertCat()) {
+                @CSRF.formField
+                @inputText(catForm("name"), '_label -> "Cat's name", '_help -> "name your feline friend")
+                @inputText(catForm("color"), '_label -> "Cat's color", '_help -> "enter the color of this kitty cat")
+                <input type="submit" value="Create a cat" class="btn primary">
+            }
+
+            <h2>Previously inserted cats:</h2>
+            <table>
+                <tr><th>Name</th><th>Color</th></tr>
+                @for(c <- cats){
+                    <tr>
+                        <td>@c.id</td>
+                        <td>@c.name</td>
+                        <td>@c.color</td>
+                        <td>
+                        @form(routes.HomeController.deleteCat(c.id)) {
+                            @CSRF.formField
+                            <input type="submit" value="Delete this cat" class="btn danger">
+                        }
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+
+        <div id="dogs">
+            <h2>Insert a kitty dog here:</h2>
+
+            <form action="/insert/dog" method="POST">
+                <input name="name" type="text" placeholder="name your canine friend"/>
+                <input name="color" type="text" placeholder="enter the color of this kitty dog"/>
+                <input type="submit"/>
+            </form>
+
+            <h2>Previously inserted dogs:</h2>
+            <table>
+                <tr><th>Name</th><th>Color</th></tr>
+                @for(d <- dogs){
+                    <tr><td>@d.name</td><td>@d.color</td></tr>
+                }
+            </table>
+        </div>
+    </div>
+}
