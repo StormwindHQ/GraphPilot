@@ -8,6 +8,7 @@
 
 include .make/Makefile.inc
 include ./compose/Makefile
+include ./frontend/Makefile
 
 export
 # Local IP address for development environment
