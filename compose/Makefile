@@ -104,6 +104,7 @@ compose-destroy: compose-stop compose-rm
 	rm -rf ${DIR_PATH}/openwhisk-master*
 
 .PHONY: compose-ngrok-url
+## compose ngrok find url
 compose-ngrok-url:
 	curl "$(docker port ${NGROK_SERVICE_NAME} 4040)/api/tunnels"
 
