@@ -32,6 +32,7 @@ OPENWHISK_PROJECT_HOME ?= ${DIR_PATH}/openwhisk-master
 OPENWHISK_CATALOG_HOME ?= ${DIR_PATH}/openwhisk-catalog
 WSK_CLI ?= $(OPENWHISK_PROJECT_HOME)/bin/wsk
 OPEN_WHISK_DB_PREFIX ?= local_
+NGROK_SERVICE_NAME ?= ngrok
 
 DOCKER_KERNEL ?= $(shell docker version --format "{{.Server.KernelVersion}}")
 ifeq ("$(UNAME_STR)","Linux")
@@ -102,6 +103,9 @@ compose-destroy: compose-stop compose-rm
 	fi;
 	rm -rf ${DIR_PATH}/openwhisk-master*
 
+.PHONY: compose-ngrok-url
+compose-ngrok-url:
+	curl "$(docker port ${NGROK_SERVICE_NAME} 4040)/api/tunnels"
 
 .PHONY: compose-download
 compose-download:
