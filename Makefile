@@ -10,6 +10,8 @@ include .make/Makefile.inc
 include ./compose/Makefile
 include ./frontend/Makefile
 
+THIS_FILE := $(lastword $(MAKEFILE_LIST))
+
 export
 # Local IP address for development environment
 LOCAL_IP ?= "localhost"

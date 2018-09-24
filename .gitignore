@@ -22,8 +22,9 @@ node_modules/
 .gradle
 .env
 frontend/logs
-frontend/project/project
-frontend/project/target
+frontend/project/**/*
+!frontend/project/build.properties
+!frontend/project/plugins.sbt
 frontend/target
 frontend/tmp
 frontend/.history

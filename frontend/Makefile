@@ -1,4 +1,4 @@
-APP_PORT ?= 9001
+APP_PORT ?= 9002
 
 ## Initiates frontend development environment. Default port is set to 9001
 frontend-dev:
