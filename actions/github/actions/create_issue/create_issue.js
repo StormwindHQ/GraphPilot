@@ -10,38 +10,39 @@ function index() {
   const REPO = process.env.REPO; // Name of the Github user
   const USER = process.env.USER; // Name of the Github repository
   const ACCESS_TOKEN = process.env.ACCESS_TOKEN; // Github personal token; https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/
-  const WEBHOOK_URL = process.env.WEBHOOK_URL; // URL to post the webhook payload
-  const body = JSON.stringify({
+  const BODY = JSON.stringify({
     "title": "Found a bug",
     "body": "I'm having a problem with this.",
     "assignees": [
-      "octocat"
+      "JasonShin"
     ],
-    "milestone": 1,
     "state": "open",
     "labels": [
       "bug"
     ]
   });
-  fetch(`https://api.github.com/repos/${USER}/${REPO}/hooks?access_token=${ACCESS_TOKEN}`, {
+
+  console.log(REPO, USER, ACCESS_TOKEN, BODY);
+
+  fetch(`https://api.github.com/repos/${USER}/${REPO}/issues?access_token=${ACCESS_TOKEN}`, {
     method: 'POST',
     mode: "cors",
     cache: "no-cache",
     headers: {
       "Content-Type": "application/json",
     },
-    body,
+    body: BODY
   })
-  .then((response) => {
-    if (response.status >= 400) {
-      throw new Error(`${response.status} failed to create a webhook! - ${response.statusText}`);
-    }
-    return response.json();
-  })
-  .then(function(stories) {
-    console.log(stories);
-  })
-  .catch((err) => console.log(err));
+    .then((response) => {
+      /* if (response.status >= 400) {
+        throw new Error(`${response.status} failed to create a webhook! - ${response.statusText}`);
+      } */
+      return response.json();
+    })
+    .then(function(stories) {
+      console.log(stories);
+    })
+    .catch((err) => console.log(err));
 }
 
 index();
