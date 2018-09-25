@@ -1,0 +1,27 @@
+{
+  "reference": "https://developer.github.com/v3/issues/#create-an-issue",
+  "inputs": [
+    {
+      "name": "title",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "body",
+      "type": "string",
+      "assignees": "string[]",
+      "required": true
+    },
+    {
+      "name": "state",
+      "type": "enum",
+      "choices": ["open", "closed"],
+      "required": true
+    },
+    {
+      "name": "labels",
+      "type": "string[]",
+      "required": false
+    }
+  ]
+}
