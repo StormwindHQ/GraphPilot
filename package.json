@@ -1,5 +1,5 @@
 {
-  "name": "stormwind-new",
+  "name": "stormwind",
   "version": "1.0.0",
   "description": "Stormwind Node Environment",
   "main": "index.js",
@@ -10,13 +10,18 @@
     "type": "git",
     "url": "git+https://github.com/StormwindHQ/Stormwind-New.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Jason Shin",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/StormwindHQ/Stormwind-New/issues"
   },
   "homepage": "https://github.com/StormwindHQ/Stormwind-New#readme",
   "dependencies": {
-    "http-proxy": "^1.17.0"
-  }
+    "http-proxy": "^1.17.0",
+    "isomorphic-fetch": "^2.2.1"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "automation"
+  ]
 }
