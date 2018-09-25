@@ -5,7 +5,7 @@ require('isomorphic-fetch');
  * when a new issue is created. It will not create a duplicated
  * webhook if it already exists.
  */
-function index() {
+function main() {
   // Loading env variables
   const REPO = process.env.REPO; // Name of the Github user
   const USER = process.env.USER; // Name of the Github repository
@@ -45,4 +45,4 @@ function index() {
     .catch((err) => console.log(err));
 }
 
-index();
+exports.main = main
