@@ -15,10 +15,10 @@ function index() {
     "name": "web",
     "active": true,
     "events": [
-      "issues"
+      "gollum"
     ],
     "config": {
-      "url": `${WEBHOOK_URL}/api/v1/web/guest/default/onNewIssue`,
+      "url": `${WEBHOOK_URL}/api/v1/web/guest/default/onWikiUpdate`,
       "content_type": "json"
     }
   });

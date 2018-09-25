@@ -1,5 +1,5 @@
 {
-  "main": "create_issue.js",
+  "main": "main.js",
   "dependencies": {
     "isomorphic-fetch": "^2.2.1"
   }
