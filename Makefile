@@ -15,3 +15,6 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 export
 # Local IP address for development environment
 LOCAL_IP ?= "localhost"
+
+dev:
+	./scripts/dev.sh

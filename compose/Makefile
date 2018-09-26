@@ -107,6 +107,12 @@ compose-destroy: compose-stop compose-rm
 compose-ngrok-url:
 	curl "$(docker port ngrok 4040)/api/tunnels"
 
+.PHONY: compose-api-auth
+## Retrieves OpenWhisk API auth details
+compose-api-auth:
+	echo "Invoking scripts/getAuthPair.sh"
+	./scripts/getAuthPair.sh
+
 .PHONY: compose-download
 compose-download:
 	# Always download the latest openwhisk-master
