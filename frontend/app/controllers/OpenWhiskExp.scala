@@ -11,8 +11,9 @@ import play.api.data.Form
 import play.api.data.Forms.{ date, longNumber, mapping, nonEmptyText, optional, text }
 import play.filters.csrf._
 import play.filters.csrf.CSRF.Token
-
 import services.WskService
+
+import play.api.libs.ws._
 
 /**
   * This controller creates an `Action` to handle HTTP requests to the
@@ -21,10 +22,11 @@ import services.WskService
 @Singleton
 class OpenWhiskExp @Inject()(
   cc: MessagesControllerComponents,
-  wsk: WskService
+  wsk: WskService,
+  ws: WSClient
 )(implicit assetsFinder: AssetsFinder) extends MessagesAbstractController(cc) {
-  def index = Action {
-    wsk.getNamespaces()
-    Ok(views.html.index(message="testing!!"))
+  def index = Action.async {
+    wsk.getNamespaces().map { response => Ok(response.body) }
   }
+
 }

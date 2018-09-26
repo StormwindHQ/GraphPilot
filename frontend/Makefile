@@ -2,7 +2,7 @@ APP_PORT ?= 9002
 
 ## Initiates frontend development environment. Default port is set to 9001
 frontend-dev:
-	sbt "~run ${APP_PORT}"
+	sbt "~run -Dconfig.resource=development.conf ${APP_PORT}"
 
 frontend-clean:
 	# Removes all .db files

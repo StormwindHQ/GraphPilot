@@ -17,3 +17,4 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0"
 )
 libraryDependencies += "com.h2database" % "h2" % "1.4.197"
+libraryDependencies += ws
