@@ -26,7 +26,7 @@ class OpenWhiskExp @Inject()(
   ws: WSClient
 )(implicit assetsFinder: AssetsFinder) extends MessagesAbstractController(cc) {
   def index = Action.async {
-    wsk.getNamespaces().map { response => Ok(response.body) }
+    wsk.getNamespaces().map { response => Ok(response) }
   }
 
 }
