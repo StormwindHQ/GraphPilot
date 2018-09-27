@@ -4,6 +4,7 @@ import java.io.{File, FileInputStream, FileOutputStream}
 import sun.misc.{BASE64Encoder, BASE64Decoder}
 import java.nio.file.{Paths}
 import com.google.common.io.Files
+import org.apache.commons.codec.binary.Base64
 
 /**
   * FileEncoder.scala
@@ -14,17 +15,38 @@ import com.google.common.io.Files
   */
 @Singleton
 class FileEncoder {
-  def getActionAsBase64(appName: String = null, taskType: String = null, taskName: String = null): Unit = {
-    // It should be (pathToTheProject)/frontend
+
+  /**
+    * Get the zip folder of action as Base64.
+    * This is typically need to interact with the OpenWhisk API for creating actions
+    * by passing in the base64 representation of the ZIP file.
+    * @param appName - application name such as Github
+    * @param taskType - taskType can be either actions or triggers
+    * @param taskName - name of the task such as create_issue
+    * @return
+    */
+  def getActionAsBase64(
+    appName: String = null,
+    taskType: String = null,
+    taskName: String = null
+  ): String = {
     val pwd = System.getProperty("user.dir")
     val filePath = Paths.get(pwd, "..", "tasks", appName, taskType, taskName, taskName + ".zip").toString
-    val file = new File(filePath).toString
-    val simplified = Files.simplifyPath(file)
-    val in = new FileInputStream(simplified)
+    val simplified = Files.simplifyPath(filePath)
+
+    // Reading the file as a FileInputStream
+    val file = new File(simplified)
+    val in = new FileInputStream(file)
     val bytes = new Array[Byte](file.length.toInt)
-    in.read(bytes)
+    in.read(bytes) // stream inserts bytes into the array
     in.close()
-    print("hey!!")
-    print("checking file" + bytes)
+
+    // Encoding the file using Base64encoder
+    val encoded =
+      new BASE64Encoder()
+        .encode(bytes)
+        .replace("\n", "")
+        .replace("\r", "")
+    return encoded.toString
   }
 }
