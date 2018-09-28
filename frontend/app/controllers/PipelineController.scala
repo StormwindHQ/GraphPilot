@@ -13,6 +13,8 @@ import play.filters.csrf._
 import play.filters.csrf.CSRF.Token
 import services.{ WskService, TaskKind }
 
+import models.Pipeline
+
 import play.api.libs.ws._
 
 /**
@@ -25,10 +27,25 @@ class PipelineController @Inject()(
   wsk: WskService,
   ws: WSClient
 )(implicit assetsFinder: AssetsFinder) extends MessagesAbstractController(cc) {
-  def index = Action.async {
-    wsk.getNamespaces().map { response => Ok(response) }
+
+  val pipelineForm = Form(
+    mapping(
+      "id"  -> optional(longNumber)
+    )(Pipeline.apply)(Pipeline.unapply)
+  )
+
+  def index = Action.async { implicit request =>
+    wsk.getNamespaces().map {
+      response => Ok(views.html.index(response, pipelineForm))
+    }
   }
-  def addPipeline = Action.async {
+
+  /**
+    * Add a pipeline
+    * @return
+    */
+  def createPipeline = Action.async { implicit request =>
+    // Ok("test")
     wsk.createTask(
       appName="github",
       taskType="actions",
@@ -36,4 +53,5 @@ class PipelineController @Inject()(
       kind=TaskKind.node6
     ).map { response => Ok(response) }
   }
+
 }

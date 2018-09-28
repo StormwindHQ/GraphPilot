@@ -7,13 +7,21 @@ package utils
   */
 object ConfigHelper {
   /**
+    * sys.env.get simple wrapper
+    * @param name
+    * @return
+    */
+  def getEnv(name: String) = {
+    sys.env.get(name)
+  }
+  /**
     * Username used to interact with OpenWhisk.
     * If WHISK_USER is not set, then uses WHISK_ROOT_USER by default
     * @return
     */
   def WHISK_USER: String = {
-    val userName: Option[String] = sys.env.get("WHISK_USER")
-    val rootUser: Option[String] = sys.env.get("WHISK_ROOT_USER")
+    val userName: Option[String] = getEnv("WHISK_USER")
+    val rootUser: Option[String] = getEnv("WHISK_ROOT_USER")
 
     if (!userName.isEmpty) {
       return userName.get
@@ -27,8 +35,8 @@ object ConfigHelper {
     * @return
     */
   def WHISK_PASS: String = {
-    val userPass: Option[String] = sys.env.get("WHISK_PASS")
-    val rootPass: Option[String] = sys.env.get("WHISK_ROOT_PASS")
+    val userPass: Option[String] = getEnv("WHISK_PASS")
+    val rootPass: Option[String] = getEnv("WHISK_ROOT_PASS")
 
     if (!userPass.isEmpty) {
       return userPass.get
@@ -43,7 +51,7 @@ object ConfigHelper {
     * @return
     */
   def WHISK_HOST: String = {
-    val host = sys.env.get("WHISK_HOST")
+    val host = getEnv("WHISK_HOST")
     return host.getOrElse("localhost")
   }
 }

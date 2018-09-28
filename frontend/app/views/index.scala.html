@@ -2,7 +2,9 @@
  * This template takes a two arguments, a String containing a
  * message to display and an AssetsFinder to locate static assets.
  *@
-@(message: String)(implicit assetsFinder: AssetsFinder)
+@(message: String, pipelineForm: Form[Pipeline])(implicit assetsFinder: AssetsFinder, requestHeader: MessagesRequestHeader)
+
+@import views.html.helper._
 
 @*
  * Call the `main` template with two arguments. The first
@@ -18,5 +20,9 @@
     <div>
         @message
         hey!
+        @form(routes.PipelineController.createPipeline()) {
+            @CSRF.formField
+            <input type="submit" value="Create a pipeline" class="btn">
+        }
     </div>
 }
