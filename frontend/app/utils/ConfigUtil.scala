@@ -1,5 +1,10 @@
 package utils
 
+/**
+  * ConfigHelper is an abstraction layer to retrieve neccessary
+  * variables for operations within the application. ConfigHelper convers
+  * the domains including OpenWhisk, database and etc.
+  */
 object ConfigHelper {
   /**
     * Username used to interact with OpenWhisk.
