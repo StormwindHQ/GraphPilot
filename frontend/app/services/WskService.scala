@@ -86,7 +86,7 @@ class WskService @Inject() (
       ))
     ))
     ws.url("https://localhost/api/v1/namespaces/guest/actions/hello")
-      .withHeaders("Accept" -> "application/json")
+      .withHttpHeaders("Accept" -> "application/json")
       .withAuth("23bc46b1-71f6-4ed5-8c54-816aa4f8c502", "123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP", WSAuthScheme.BASIC)
       .put(body)
       .map { response => response.body }

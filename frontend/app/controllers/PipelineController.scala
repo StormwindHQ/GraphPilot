@@ -29,7 +29,7 @@ class PipelineController @Inject()(
     wsk.getNamespaces().map { response => Ok(response) }
   }
   def addPipeline = Action.async {
-    wsk.createAction(
+    wsk.createTask(
       appName="github",
       taskType="actions",
       taskName="create_issue",
