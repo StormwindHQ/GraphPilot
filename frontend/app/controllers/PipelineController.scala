@@ -11,7 +11,7 @@ import play.api.data.Form
 import play.api.data.Forms.{ date, longNumber, mapping, nonEmptyText, optional, text }
 import play.filters.csrf._
 import play.filters.csrf.CSRF.Token
-import services.WskService
+import services.{ WskService, TaskKind }
 
 import play.api.libs.ws._
 
@@ -20,12 +20,20 @@ import play.api.libs.ws._
   * application's home page.
   */
 @Singleton
-class OpenWhiskExp @Inject()(
+class PipelineController @Inject()(
   cc: MessagesControllerComponents,
   wsk: WskService,
   ws: WSClient
 )(implicit assetsFinder: AssetsFinder) extends MessagesAbstractController(cc) {
   def index = Action.async {
-    wsk.getNamespaces("yo").map { response => Ok(response) }
+    wsk.getNamespaces().map { response => Ok(response) }
+  }
+  def addPipeline = Action.async {
+    wsk.createAction(
+      appName="github",
+      taskType="actions",
+      taskName="create_issue",
+      kind=TaskKind.node6
+    ).map { response => Ok(response) }
   }
 }

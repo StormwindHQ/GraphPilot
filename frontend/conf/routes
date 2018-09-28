@@ -20,4 +20,5 @@ GET     /message                    controllers.AsyncController.message
 GET     /assets/*file               controllers.Assets.versioned(file)
 
 # OpenWhisk
-GET     /wsk                        controllers.OpenWhiskExp.index
+GET     /pipeline                   controllers.PipelineController.index
+GET     /pipeline/add               controllers.PipelineController.addPipeline
