@@ -22,35 +22,17 @@ import play.api.libs.ws._
   * application's home page.
   */
 @Singleton
-class PipelineController @Inject()(
+class TaskController @Inject()(
   cc: MessagesControllerComponents,
   wsk: WskService,
   ws: WSClient
 )(implicit assetsFinder: AssetsFinder) extends MessagesAbstractController(cc) {
 
-  val pipelineForm = Form(
-    mapping(
-      "id"  -> optional(longNumber)
-    )(Pipeline.apply)(Pipeline.unapply)
-  )
-
-  def index = Action.async { implicit request =>
-    wsk.listNamespaces().map {
-      response => Ok(views.html.index(response, pipelineForm))
+  def listTasks = Action.async { implicit request =>
+    wsk.listTasks().map {
+      response => Ok(response)
     }
   }
 
-  /**
-    * Add a pipeline
-    * @return
-    */
-  def createPipeline = Action.async { implicit request =>
-    wsk.createTask(
-      appName="github",
-      taskType="actions",
-      taskName="create_issue",
-      kind=TaskKind.node6
-    ).map { response => Ok(response) }
-  }
 
 }

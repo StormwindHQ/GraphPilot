@@ -34,7 +34,8 @@ object TaskKind extends Enumeration {
   * The class provides interface to OpenWhisk backend. Username and password are
   * mandatory security requirements and must be provided in order to operate this class.
   * Naming convention for each utility method follows:
-  * [R] get...
+  * [R] get... (if querying a single)
+  * [R] list... (if querying a multiple)
   * [W] create..
   * [U] update..
   * [D] delete..
@@ -52,10 +53,10 @@ class WskService @Inject() (
     * Get available name spaces in the OpenWhisk instance
     * @return Future<String>
     */
-  def getNamespaces(): Future[String] = {
+  def listNamespaces(): Future[String] = {
     // TODO: String interpolation + abstracted value
 
-    ws.url("https://localhost/api/v1/namespaces")
+    ws.url(s"https://${WHISK_HOST}/api/v1/namespaces")
       .withAuth(WHISK_USER, WHISK_PASS, WSAuthScheme.BASIC)
       .get()
       .map { response => response.body }
@@ -86,12 +87,21 @@ class WskService @Inject() (
         "code" -> JsString(encodedAction)
       ))
     ))
-    println("checking whisk host" + WHISK_HOST)
-    println(s"https://${WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
     ws.url(s"https://${WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
       .withHttpHeaders("Accept" -> "application/json")
       .withAuth(WHISK_USER, WHISK_PASS, WSAuthScheme.BASIC)
       .put(body)
+      .map { response => response.body }
+  }
+
+  /**
+    * Returns a list of tasks in the current OpenWhisk instance in a string format
+    * @return
+    */
+  def listTasks(): Future[String] = {
+    ws.url(s"https://${WHISK_HOST}/api/v1/namespaces/guest/actions")
+      .withAuth(WHISK_USER, WHISK_PASS, WSAuthScheme.BASIC)
+      .get()
       .map { response => response.body }
   }
 }
