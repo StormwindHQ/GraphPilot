@@ -7,7 +7,7 @@ import scala.concurrent.Future
 import play.api.libs.ws._
 import play.api.http.HttpEntity
 import play.api.libs.json._
-import utils.ConfigHelper.{ WHISK_USER, WHISK_PASS }
+import utils.ConfigHelper.{ WHISK_HOST, WHISK_USER, WHISK_PASS }
 
 /**
   * List of available environment types in the latest OpenWhisk
@@ -86,7 +86,9 @@ class WskService @Inject() (
         "code" -> JsString(encodedAction)
       ))
     ))
-    ws.url("https://localhost/api/v1/namespaces/guest/actions/hello")
+    println("checking whisk host" + WHISK_HOST)
+    println(s"https://${WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
+    ws.url(s"https://${WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
       .withHttpHeaders("Accept" -> "application/json")
       .withAuth(WHISK_USER, WHISK_PASS, WSAuthScheme.BASIC)
       .put(body)
