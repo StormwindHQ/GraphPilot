@@ -78,7 +78,9 @@ class WskService @Inject() (
     appName: String,
     taskType: String,
     taskName: String,
-    kind: TaskKind.Value
+    kind: TaskKind.Value,
+    // inputs: JsObject,
+    // env: JsObject
   ): Future[String] = {
     val encodedAction = fileEncoder.getActionAsBase64(appName, taskType, taskName)
     val body: JsValue = JsObject(Seq(
