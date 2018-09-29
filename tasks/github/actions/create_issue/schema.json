@@ -1,5 +1,23 @@
 {
   "reference": "https://developer.github.com/v3/issues/#create-an-issue",
+  "env": [
+    {
+      "name": "REPO",
+      "type": "string",
+      "required": true
+    }, {
+      "name": "USER",
+      "type": "string",
+      "required": true
+    }, {
+      "name": "ACCESS_TOKEN",
+      "type": "string",
+      "required": true
+    }, {
+      "name": "WEBHOOK_URL",
+      "type": "webhook_url"
+    }
+  ],
   "inputs": [
     {
       "name": "title",

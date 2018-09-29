@@ -28,11 +28,14 @@ class TaskController @Inject()(
   ws: WSClient
 )(implicit assetsFinder: AssetsFinder) extends MessagesAbstractController(cc) {
 
+  /**
+    * Display list of tasks registered in the OpenWhisk instance
+    * @return
+    */
   def listTasks = Action.async { implicit request =>
     wsk.listTasks().map {
       response => Ok(response)
     }
   }
-
 
 }
