@@ -10,6 +10,7 @@ import utils.{ ConfigHelper }
 /**
   * Unit tests can run without a full Play application.
   */
+/*
 class ConfigUtilSpec extends PlaySpec {
 
   "ConfigHelper" should {
@@ -40,3 +41,4 @@ class ConfigUtilSpec extends PlaySpec {
 
   }
 }
+*/

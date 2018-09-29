@@ -20,6 +20,20 @@ import java.io.{InputStream, InputStreamReader}
 class FileEncoder {
 
   /**
+    * Read file as a string
+    * @param path
+    * @return
+    * @sideEffect
+    */
+  def readFileAsString(path: String): String = {
+    // Reading the file as a FileInputStream
+    val fileInputStream = new FileInputStream(new File(path))
+    // TODO: Is there a way to read as Bytes directly?
+    val str = CharStreams.toString(new InputStreamReader(fileInputStream, Charsets.UTF_8))
+    return str
+  }
+
+  /**
     * Get the zip folder of action as Base64.
     * This is typically need to interact with the OpenWhisk API for creating actions
     * by passing in the base64 representation of the ZIP file.
@@ -29,24 +43,18 @@ class FileEncoder {
     * @return
     */
   def getActionAsBase64(
-    appName: String = null,
-    taskType: String = null,
-    taskName: String = null
+    appName: String,
+    taskType: String,
+    taskName: String,
+    // Use the default method if possible
+    readFileAsString: (String) => String = this.readFileAsString
   ): String = {
     val pwd = System.getProperty("user.dir")
     val filePath = Paths.get(pwd, "..", "tasks", appName, taskType, taskName, taskName + ".zip").toString
     val simplified = Files.simplifyPath(filePath)
-    // Reading the file as a FileInputStream
-    val fileInputStream = new FileInputStream(new File(simplified))
-    // TODO: Is there a way to read as Bytes directly?
-    val str = CharStreams.toString(new InputStreamReader(fileInputStream, Charsets.UTF_8))
-
+    val content: String = readFileAsString(simplified)
     // Encoding the file using Base64encoder
-    val encoded =
-      new BASE64Encoder()
-        .encode(str.getBytes(Charsets.UTF_8))
-        .replace("\n", "")
-        .replace("\r", "")
+    val encoded = new BASE64Encoder().encode(content.getBytes(Charsets.UTF_8))
     return encoded.toString
   }
 }
