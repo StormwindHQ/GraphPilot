@@ -4,7 +4,10 @@ import java.io.{File, FileInputStream, FileOutputStream}
 import sun.misc.{BASE64Encoder, BASE64Decoder}
 import java.nio.file.{Paths}
 import com.google.common.io.Files
+import com.google.common.base.Charsets
 import org.apache.commons.codec.binary.Base64
+import com.google.common.io.CharStreams
+import java.io.{InputStream, InputStreamReader}
 
 /**
   * FileEncoder.scala
@@ -33,18 +36,15 @@ class FileEncoder {
     val pwd = System.getProperty("user.dir")
     val filePath = Paths.get(pwd, "..", "tasks", appName, taskType, taskName, taskName + ".zip").toString
     val simplified = Files.simplifyPath(filePath)
-
     // Reading the file as a FileInputStream
-    val file = new File(simplified)
-    val in = new FileInputStream(file)
-    val bytes = new Array[Byte](file.length.toInt)
-    in.read(bytes) // stream inserts bytes into the array
-    in.close()
+    val fileInputStream = new FileInputStream(new File(simplified))
+    // TODO: Is there a way to read as Bytes directly?
+    val str = CharStreams.toString(new InputStreamReader(fileInputStream, Charsets.UTF_8))
 
     // Encoding the file using Base64encoder
     val encoded =
       new BASE64Encoder()
-        .encode(bytes)
+        .encode(str.getBytes(Charsets.UTF_8))
         .replace("\n", "")
         .replace("\r", "")
     return encoded.toString
