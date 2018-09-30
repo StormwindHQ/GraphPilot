@@ -4,14 +4,15 @@ import java.nio.file.Paths
 import play.api.libs.json._
 import scala.xml.dtd.ValidationException
 
-import consts.SchemaConst.{ TYPE_STRING }
-import consts.ErrorMessages.{ MSG_REQUIRED, MSG_NOT_STRING }
+import consts.SchemaConst.{
+  TYPE_STRING, TYPE_ARRAY_STRING }
+import consts.ErrorMessages.{
+  MSG_REQUIRED, MSG_NOT_STRING, MSG_NOT_ARRAY_STRING }
 
 /**
   * A universal validation provider. It should be split out in the future.
   */
 class Validation {
-
   /**
     * Given a JsValue payload, and a schema.json to pick up;
     * It will compare the payoad and process validation accordingly
@@ -51,7 +52,18 @@ class Validation {
       if (xType == TYPE_STRING && !value.isInstanceOf[JsString]) {
         throw new ValidationException(MSG_NOT_STRING.format(name))
       }
+
+      // 3. Check string array
+      if (xType == TYPE_ARRAY_STRING) {
+        try {
+          value.as[List[JsString]]
+        } catch {
+          case jre: JsResultException => throw new ValidationException(MSG_NOT_ARRAY_STRING.format(name))
+          case e: Exception => throw e
+        }
+      }
     })
     true
   }
+
 }
