@@ -27,7 +27,11 @@
     {
       "name": "body",
       "type": "string",
-      "assignees": "string[]",
+      "required": true
+    },
+    {
+      "name": "assignees",
+      "type": "string[]",
       "required": true
     },
     {

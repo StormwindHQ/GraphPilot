@@ -1,9 +1,15 @@
 package services
 import javax.inject.Inject
 import java.nio.file.Paths
-import play.api.libs.json.{ JsValue, Json, JsUndefined }
+import play.api.libs.json._
 import scala.xml.dtd.ValidationException
 
+import consts.SchemaConst.{ TYPE_STRING }
+import consts.ErrorMessages.{ MSG_REQUIRED, MSG_NOT_STRING }
+
+/**
+  * A universal validation provider. It should be split out in the future.
+  */
 class Validation {
 
   /**
@@ -35,13 +41,16 @@ class Validation {
       val name = (x \ "name").as[String]
       val xType = (x \ "type").as[String]
       val required = (x \ "required").as[Boolean]
-
+      val value = (payload \ name)
       // 1. If the current target is required, inputs should have the value
-      if (required && (inputs \ name).isInstanceOf[JsUndefined]) {
-        throw new ValidationException(f"${name} is a required value")
+      if (required && value.isInstanceOf[JsUndefined]) {
+        throw new ValidationException(MSG_REQUIRED.format(name))
       }
 
-      // 2.
+      // 2. Check string type
+      if (xType == TYPE_STRING && !value.isInstanceOf[JsString]) {
+        throw new ValidationException(MSG_NOT_STRING.format(name))
+      }
     })
     true
   }
