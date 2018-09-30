@@ -16,8 +16,7 @@ import java.io.{InputStream, InputStreamReader}
   * The service aim to provide easy-to-use file R/W operations throughout Stormwind.io code base.
   * It will have utilities such as getActionAsBase64
   */
-@Singleton
-class FileEncoder {
+class FileSystem {
 
   /**
     * Read file as a string

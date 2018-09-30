@@ -41,13 +41,13 @@ object TaskKind extends Enumeration {
   * [D] delete..
   *
   * @param ws
-  * @param fileEncoder
+  * @param fs
   * @param executionContext
   */
 @Singleton
 class WskService @Inject() (
   ws: WSClient,
-  fileEncoder: FileEncoder
+  fs: FileSystem
 )(implicit executionContext: ExecutionContext) {
   /**
     * Get available name spaces in the OpenWhisk instance
@@ -79,10 +79,10 @@ class WskService @Inject() (
     taskType: String,
     taskName: String,
     kind: TaskKind.Value,
-    // inputs: JsObject,
+    inputs: JsValue,
     // env: JsObject
   ): Future[String] = {
-    val encodedAction = fileEncoder.getActionAsBase64(appName, taskType, taskName)
+    val encodedAction = fs.getActionAsBase64(appName, taskType, taskName)
     val body: JsValue = JsObject(Seq(
       "exec" -> JsObject(Seq(
         "kind" -> JsString(kind.toString),
