@@ -57,7 +57,7 @@ class Validation {
       }
 
       // 2. Check string type
-      if (xType == TYPE_STRING && !value.isInstanceOf[JsString]) {
+      if (xType == TYPE_STRING && !value.get.isInstanceOf[JsString]) {
         throw new ValidationException(MSG_NOT_STRING.format(name))
       }
 
