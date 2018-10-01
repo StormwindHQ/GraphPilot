@@ -6,8 +6,11 @@ import scala.xml.dtd.ValidationException
 
 import consts.SchemaConst.{
   TYPE_STRING, TYPE_ARRAY_STRING }
-import consts.ErrorMessages.{
-  MSG_REQUIRED, MSG_NOT_STRING, MSG_NOT_ARRAY_STRING }
+import consts.{
+  FieldRequiredException,
+  FieldStringException,
+  FieldStringArrayException
+}
 
 /**
   * A universal validation provider. It should be split out in the future.
@@ -53,12 +56,12 @@ class Validation {
       val value = (payload \ name)
       // 1. If the current target is required, inputs should have the value
       if (required && value.isInstanceOf[JsUndefined]) {
-        throw new ValidationException(MSG_REQUIRED.format(name))
+        throw new FieldRequiredException(name)
       }
 
       // 2. Check string type
       if (xType == TYPE_STRING && !value.get.isInstanceOf[JsString]) {
-        throw new ValidationException(MSG_NOT_STRING.format(name))
+        throw new FieldStringException(name)
       }
 
       // 3. Check string array
@@ -66,7 +69,7 @@ class Validation {
         try {
           value.as[List[JsString]]
         } catch {
-          case jre: JsResultException => throw new ValidationException(MSG_NOT_ARRAY_STRING.format(name))
+          case jre: JsResultException => throw new FieldStringArrayException(name)
           case e: Exception => throw e
         }
       }

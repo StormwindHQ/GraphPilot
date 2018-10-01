@@ -2,6 +2,11 @@ import org.scalatestplus.play._
 import play.api.libs.json._
 import scala.xml.dtd.ValidationException
 import services.Validation
+import consts.{
+  FieldRequiredException,
+  FieldStringException,
+  FieldStringArrayException
+}
 
 class ValidationSpec extends PlaySpec {
   val schema1 = """
@@ -71,13 +76,32 @@ class ValidationSpec extends PlaySpec {
     }
   """)
   "validateTaskPayload" should {
+    "invalidate required" in {
+      val valid = new Validation {
+        override def readTaskAsString(path: String): String = schema1
+      }
+
+      // 1. Undefined test
+      val newPayload = payload1.as[JsObject] - "title"
+      a[FieldRequiredException] must be thrownBy {
+        valid.validateTaskPayload("github", "actions", "hmm", newPayload)
+      }
+
+      // 2. null test
+      // TODO: Finish implementing
+      /* val newPayload2 = payload1.as[JsObject] ++ Json.obj("title" -> null)
+      a[FieldRequiredException] must be thrownBy {
+        valid.validateTaskPayload("github", "actions", "hmm", newPayload2)
+      } */
+    }
+
     "invalidate string" in {
       val valid = new Validation {
         override def readTaskAsString(path: String): String = schema1
       }
       val newPayload = payload1.as[JsObject] ++ Json.obj("title" -> JsNumber(1))
 
-      a[ValidationException] must be thrownBy {
+      a[FieldStringException] must be thrownBy {
         valid.validateTaskPayload(
           appName="github",
           taskType="actions",
@@ -94,7 +118,7 @@ class ValidationSpec extends PlaySpec {
       // Fixture with title number but it's meant to be string
       val newPayload = payload1.as[JsObject] ++ Json.obj("assignees" -> Json.parse("[1, 2]"))
 
-      a[ValidationException] must be thrownBy {
+      a[FieldStringArrayException] must be thrownBy {
         valid.validateTaskPayload(
           appName="github",
           taskType="actions",
