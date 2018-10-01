@@ -23,7 +23,7 @@ ifeq ($(LOCAL_IP), )
 	LOCAL_IP = "localhost"
 endif
 
-DIR_PATH := ${CURDIR}/compose
+DIR_PATH := ${CURDIR}/.compose
 COMPOSE_FILE := ${DIR_PATH}/docker-compose.yml
 DOCKER_HOST_IP ?= $(shell echo ${DOCKER_HOST} | grep -o "[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}" || echo ${LOCAL_IP})
 DOCKER_REGISTRY ?= ""

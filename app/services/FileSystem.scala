@@ -49,7 +49,7 @@ class FileSystem {
     readFileAsString: (String) => String = this.readFileAsString
   ): String = {
     val pwd = System.getProperty("user.dir")
-    val filePath = Paths.get(pwd, "..", "tasks", appName, taskType, taskName, taskName + ".zip").toString
+    val filePath = Paths.get(pwd, "tasks", appName, taskType, taskName, taskName + ".zip").toString
     val simplified = Files.simplifyPath(filePath)
     val content: String = readFileAsString(simplified)
     // Encoding the file using Base64encoder

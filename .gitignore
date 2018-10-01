@@ -21,14 +21,14 @@ node_modules/
 # Backend
 .gradle
 .env
-frontend/logs
-frontend/project/**/*
-!frontend/project/build.properties
-!frontend/project/plugins.sbt
-frontend/target
-frontend/tmp
-frontend/.history
-frontend/dist
+logs/
+project/**/*
+!project/build.properties
+!project/plugins.sbt
+target/
+tmp/
+.history
+dist/
 *.iml
 /out
 /.idea_modules
