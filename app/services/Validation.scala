@@ -14,6 +14,15 @@ import consts.ErrorMessages.{
   */
 class Validation {
   /**
+    * Read the task as string
+    * @param path
+    * @return
+    */
+  def readTaskAsString(path: String): String = {
+    val fs = new FileSystem
+    fs.readFileAsString(path)
+  }
+  /**
     * Given a JsValue payload, and a schema.json to pick up;
     * It will compare the payoad and process validation accordingly
     * 1. Check required = if schema.required == true, then payload["name"] should not be undefined
@@ -30,10 +39,9 @@ class Validation {
     payload: JsValue, // can be either env or inputs
     payloadType: String = "schema",
   ): Boolean = {
-    val fs = new FileSystem
     val pwd = System.getProperty("user.dir")
     val filePath = Paths.get(pwd, "..", "tasks", appName, taskType, taskName, s"${payloadType}.json").toString
-    val source: String = fs.readFileAsString(filePath)
+    val source: String = this.readTaskAsString(filePath)
     val schema: JsValue = Json.parse(source)
     val schemaInputs = (schema \ "inputs").as[List[JsValue]]
 
