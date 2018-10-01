@@ -61,26 +61,45 @@ class ValidationSpec extends PlaySpec {
       ]
     }
   """
+  val payload1: JsValue = Json.parse("""
+    {
+      "title": "hey",
+      "body": "hello",
+      "assignees": [1, 2],
+      "state": "open",
+      "labels": ["bug"]
+    }
+  """)
   "validateTaskPayload" should {
     "invalidate string" in {
       val valid = new Validation {
         override def readTaskAsString(path: String): String = schema1
       }
-      val payload: JsValue = Json.parse("""
-        {
-          "title": 1,
-          "body": "hello",
-          "assignees": ["Jason Shin"],
-          "state": "open",
-          "labels": ["bug"]
-        }
-      """)
+      val newPayload = payload1.as[JsObject] ++ Json.obj("title" -> JsNumber(1))
+
       a[ValidationException] must be thrownBy {
         valid.validateTaskPayload(
           appName="github",
           taskType="actions",
           taskName="hmm",
-          payload
+          newPayload
+        )
+      }
+    }
+
+    "invalidate string array" in {
+      val valid = new Validation {
+        override def readTaskAsString(path: String): String = schema1
+      }
+      // Fixture with title number but it's meant to be string
+      val newPayload = payload1.as[JsObject] ++ Json.obj("assignees" -> Json.parse("[1, 2]"))
+
+      a[ValidationException] must be thrownBy {
+        valid.validateTaskPayload(
+          appName="github",
+          taskType="actions",
+          taskName="hmm",
+          newPayload
         )
       }
     }
