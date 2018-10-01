@@ -5,11 +5,15 @@ import play.api.libs.json._
 import scala.xml.dtd.ValidationException
 
 import consts.SchemaConst.{
-  TYPE_STRING, TYPE_ARRAY_STRING }
+  TYPE_STRING,
+  TYPE_ARRAY_STRING,
+  TYPE_ENUM,
+}
 import consts.{
   FieldRequiredException,
   FieldStringException,
-  FieldStringArrayException
+  FieldStringArrayException,
+  FieldEnumException,
 }
 
 /**
@@ -71,6 +75,15 @@ class Validation {
         } catch {
           case jre: JsResultException => throw new FieldStringArrayException(name)
           case e: Exception => throw e
+        }
+      }
+
+      // 4. Check enum type
+      if (xType == TYPE_ENUM) {
+        val choices = (x \ "choices").as[JsArray].value
+        val exists = choices.exists(_ == (value.get))
+        if (!exists) {
+          throw new FieldEnumException(name)
         }
       }
     })

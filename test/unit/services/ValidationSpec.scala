@@ -5,7 +5,8 @@ import services.Validation
 import consts.{
   FieldRequiredException,
   FieldStringException,
-  FieldStringArrayException
+  FieldStringArrayException,
+  FieldEnumException,
 }
 
 class ValidationSpec extends PlaySpec {
@@ -70,11 +71,12 @@ class ValidationSpec extends PlaySpec {
     {
       "title": "hey",
       "body": "hello",
-      "assignees": [1, 2],
+      "assignees": ["Jason"],
       "state": "open",
       "labels": ["bug"]
     }
   """)
+
   "validateTaskPayload" should {
     "invalidate required" in {
       val valid = new Validation {
@@ -102,12 +104,7 @@ class ValidationSpec extends PlaySpec {
       val newPayload = payload1.as[JsObject] ++ Json.obj("title" -> JsNumber(1))
 
       a[FieldStringException] must be thrownBy {
-        valid.validateTaskPayload(
-          appName="github",
-          taskType="actions",
-          taskName="hmm",
-          newPayload
-        )
+        valid.validateTaskPayload("github", "actions", "hmm", newPayload)
       }
     }
 
@@ -115,17 +112,29 @@ class ValidationSpec extends PlaySpec {
       val valid = new Validation {
         override def readTaskAsString(path: String): String = schema1
       }
-      // Fixture with title number but it's meant to be string
       val newPayload = payload1.as[JsObject] ++ Json.obj("assignees" -> Json.parse("[1, 2]"))
 
       a[FieldStringArrayException] must be thrownBy {
-        valid.validateTaskPayload(
-          appName="github",
-          taskType="actions",
-          taskName="hmm",
-          newPayload
-        )
+        valid.validateTaskPayload("github", "actions", "hmm", newPayload)
       }
+    }
+
+    "invalidate enum" in {
+      val valid = new Validation {
+        override def readTaskAsString(path: String): String = schema1
+      }
+      val newPayload = payload1.as[JsObject] ++ Json.obj("state" -> JsString("aaaa"))
+      a[FieldEnumException] must be thrownBy {
+        valid.validateTaskPayload("github", "actions", "hmm", newPayload)
+      }
+    }
+
+    "validate payload1" in {
+      val valid = new Validation {
+        override def readTaskAsString(path: String): String = schema1
+      }
+      val result = valid.validateTaskPayload("github", "actions", "hmm", payload1)
+      result must be(true)
     }
 
   }

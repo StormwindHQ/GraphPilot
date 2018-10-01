@@ -29,3 +29,8 @@ final case class FieldStringArrayException(
   private val fieldName: String,
   private val cause: Throwable = None.orNull)
   extends Exception(s"${fieldName} should be an array of string")
+
+final case class FieldEnumException(
+  private val fieldName: String,
+  private val cause: Throwable = None.orNull)
+  extends Exception(s"${fieldName} should be a correct enum value")
