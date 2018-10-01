@@ -7,6 +7,7 @@ import scala.concurrent.Future
 import play.api.libs.ws._
 import play.api.http.HttpEntity
 import play.api.libs.json._
+import services.{ Validation }
 import utils.ConfigHelper.{ WHISK_HOST, WHISK_USER, WHISK_PASS }
 
 /**
@@ -82,6 +83,10 @@ class WskService @Inject() (
     inputs: JsValue,
     // env: JsObject
   ): Future[String] = {
+    // Validate the inputs
+    val validator = new Validation()
+    validator.validateTaskPayload(appName, taskType, taskName, inputs)
+
     val encodedAction = fs.getActionAsBase64(appName, taskType, taskName)
     val body: JsValue = JsObject(Seq(
       "exec" -> JsObject(Seq(

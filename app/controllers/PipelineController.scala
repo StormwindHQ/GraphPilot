@@ -53,6 +53,9 @@ class PipelineController @Inject()(
       "state" -> JsString("open"),
       "labels" -> JsArray(IndexedSeq(
         JsString("bug")
+      )),
+      "assignees" -> JsArray(IndexedSeq(
+        JsString("Jason")
       ))
     ))
     wsk.createTask(

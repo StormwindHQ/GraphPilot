@@ -47,7 +47,7 @@ class Validation {
     payloadType: String = "schema",
   ): Boolean = {
     val pwd = System.getProperty("user.dir")
-    val filePath = Paths.get(pwd, "..", "tasks", appName, taskType, taskName, s"${payloadType}.json").toString
+    val filePath = Paths.get(pwd, "tasks", appName, taskType, taskName, s"${payloadType}.json").toString
     val source: String = this.readTaskAsString(filePath)
     val schema: JsValue = Json.parse(source)
     val schemaInputs = (schema \ "inputs").as[List[JsValue]]
