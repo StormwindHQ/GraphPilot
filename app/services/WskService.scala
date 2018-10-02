@@ -87,7 +87,8 @@ class WskService @Inject() (
     // Validate the inputs
     val validator = new Validation()
     validator.validateTaskPayload(appName, taskType, taskName, inputs)
-
+    // Zips the task if it's not zipped already
+    fs.zipDirIfNotExist(appName, taskType, taskName)
     val encodedAction = fs.getActionAsBase64(appName, taskType, taskName)
     val body: JsValue = JsObject(Seq(
       "exec" -> JsObject(Seq(

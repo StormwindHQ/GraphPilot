@@ -35,14 +35,27 @@ class FileSystem {
 
   /**
     * Zips an action if a zip file under the action directory doesn't already exist
-    * @param dirPath - directory to zip
-    * @param zipPath - zip path to check if it exist, otherwise create a zip of dirPath
+    * Also you can forcefully zip the task, which deletes already existing ones
+    *
+    * @example
+    * fs.zipDirIfNotExist("github", "triggers", "list_webhooks")
+    * // creates a zip file under tasks/github/list_webhooks/list_webhooks.zip
+    *
+    * @param appName
+    * @param taskType
+    * @param taskName
+    * @param force
     */
-  def zipDirIfNotExist(
-    dirPath: String,
-    zipPath: String,
+  def zipTaskIfNotExist(
+    appName: String,
+    taskType: String,
+    taskName: String,
+    force: Boolean
   ): Unit = {
     val pwd = System.getProperty("user.dir")
+    val dirPath = Paths.get(pwd, "tasks", appName, taskType, taskName).toString
+    val zipPath = Paths.get(dirPath.toString, taskName + ".zip").toString
+
     if (!JFiles.exists(Paths.get(zipPath))) {
       File(dirPath).zipTo(File(zipPath))
     }
@@ -52,6 +65,9 @@ class FileSystem {
     * Get the zip folder of action as Base64.
     * This is typically need to interact with the OpenWhisk API for creating actions
     * by passing in the base64 representation of the ZIP file.
+    *
+    * @example
+    * add exmaple
     * @param appName - application name such as Github
     * @param taskType - taskType can be either actions or triggers
     * @param taskName - name of the task such as create_issue
@@ -68,11 +84,6 @@ class FileSystem {
     val taskPath = Paths.get(pwd, "tasks", appName, taskType, taskName)
     val filePath = Paths.get(taskPath.toString, taskName + ".zip")
 
-    // Zips the task if it's not already done yet
-    this.zipDirIfNotExist(
-      dirPath=taskPath.toString,
-      zipPath=filePath.toString,
-    )
     val content: String = readFileAsString(filePath.toString)
     // Encoding the file using Base64encoder
     val encoded = new BASE64Encoder().encode(content.getBytes(Charsets.UTF_8))
