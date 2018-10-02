@@ -30,6 +30,52 @@ class ConfigUtilSpec extends PlaySpec {
       host must equal("localhost")
     }
 
+    "return a mocked WHISK_USER" in {
+      val config = new ConfigUtil {
+        override def getEnv(name: String): Option[String] = Some("Jason")
+      }
+      val host = config.WHISK_USER
+      host must equal("Jason")
+    }
+
+    "return a mocked WHISK_ROOT_USER" in {
+      val config = new ConfigUtil {
+        // If WHISK_ROOT_USER, return a mock, otherwise return null
+        override def getEnv(name: String): Option[String] = {
+          if (name == "WHISK_ROOT_USER") {
+            Some("RootUser")
+          } else {
+            null
+          }
+        }
+      }
+      val host = config.WHISK_USER
+      host must equal("RootUser")
+    }
+
+    "return a mocked WHISK_PASS" in {
+      val config = new ConfigUtil {
+        override def getEnv(name: String): Option[String] = Some("password")
+      }
+      val host = config.WHISK_PASS
+      host must equal("password")
+    }
+
+    "return a mocked WHISK_ROOT_PASS" in {
+      val config = new ConfigUtil {
+        // If WHISK_ROOT_USER, return a mock, otherwise return null
+        override def getEnv(name: String): Option[String] = {
+          if (name == "WHISK_ROOT_PASS") {
+            Some("RootPassword")
+          } else {
+            null
+          }
+        }
+      }
+      val host = config.WHISK_PASS
+      host must equal("RootPassword")
+    }
+
   }
 }
 

@@ -21,8 +21,7 @@ class ConfigUtil {
   def WHISK_USER: String = {
     val userName: Option[String] = getEnv("WHISK_USER")
     val rootUser: Option[String] = getEnv("WHISK_ROOT_USER")
-
-    if (!userName.isEmpty) {
+    if (userName != null && !userName.isEmpty) {
       return userName.get
     } else {
       return rootUser.get
@@ -37,7 +36,7 @@ class ConfigUtil {
     val userPass: Option[String] = getEnv("WHISK_PASS")
     val rootPass: Option[String] = getEnv("WHISK_ROOT_PASS")
 
-    if (!userPass.isEmpty) {
+    if (userPass != null && !userPass.isEmpty) {
       return userPass.get
     } else {
       return rootPass.get
