@@ -33,6 +33,22 @@ class FileSystem {
   }
 
   /**
+    * Zips an action if a zip file under the action directory doesn't already exist
+    * @param path
+    */
+  def zipIfNotExist(
+    appName: String,
+    taskType: String,
+    taskName: String,
+  ): Unit = {
+    val pwd = System.getProperty("user.dir")
+    val filePath = Paths.get(pwd, "tasks", appName, taskType, taskName, taskName + ".zip")
+    if (!Files.exists(filePath)) {
+      print(s"${appName} ${taskType} ${taskName} does not have a zip file yet")
+    }
+  }
+
+  /**
     * Get the zip folder of action as Base64.
     * This is typically need to interact with the OpenWhisk API for creating actions
     * by passing in the base64 representation of the ZIP file.
