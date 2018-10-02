@@ -38,3 +38,4 @@ dist/
 /.settings
 *.db
 *.sqlite
+*.zip

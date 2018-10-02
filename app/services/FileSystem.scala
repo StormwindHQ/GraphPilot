@@ -1,13 +1,14 @@
 package services
 import javax.inject._
-import java.io.{File, FileInputStream, FileOutputStream}
 import sun.misc.{BASE64Encoder, BASE64Decoder}
-import java.nio.file.{Paths}
-import com.google.common.io.Files
-import com.google.common.base.Charsets
+import better.files._
+import java.io.{File => JFile, FileInputStream, FileOutputStream}
+import java.nio.file.{Paths, Files => JFiles}
+import com.google.common.io.{Files => GFiles}
 import org.apache.commons.codec.binary.Base64
 import com.google.common.io.CharStreams
 import java.io.{InputStream, InputStreamReader}
+import com.google.common.base.Charsets
 
 /**
   * FileEncoder.scala
@@ -26,7 +27,7 @@ class FileSystem {
     */
   def readFileAsString(path: String): String = {
     // Reading the file as a FileInputStream
-    val fileInputStream = new FileInputStream(new File(path))
+    val fileInputStream = new FileInputStream(new JFile(path))
     // TODO: Is there a way to read as Bytes directly?
     val str = CharStreams.toString(new InputStreamReader(fileInputStream, Charsets.UTF_8))
     return str
@@ -34,17 +35,16 @@ class FileSystem {
 
   /**
     * Zips an action if a zip file under the action directory doesn't already exist
-    * @param path
+    * @param dirPath - directory to zip
+    * @param zipPath - zip path to check if it exist, otherwise create a zip of dirPath
     */
-  def zipIfNotExist(
-    appName: String,
-    taskType: String,
-    taskName: String,
+  def zipDirIfNotExist(
+    dirPath: String,
+    zipPath: String,
   ): Unit = {
     val pwd = System.getProperty("user.dir")
-    val filePath = Paths.get(pwd, "tasks", appName, taskType, taskName, taskName + ".zip")
-    if (!Files.exists(filePath)) {
-      print(s"${appName} ${taskType} ${taskName} does not have a zip file yet")
+    if (!JFiles.exists(Paths.get(zipPath))) {
+      File(dirPath).zipTo(File(zipPath))
     }
   }
 
@@ -65,9 +65,15 @@ class FileSystem {
     readFileAsString: (String) => String = this.readFileAsString
   ): String = {
     val pwd = System.getProperty("user.dir")
-    val filePath = Paths.get(pwd, "tasks", appName, taskType, taskName, taskName + ".zip").toString
-    val simplified = Files.simplifyPath(filePath)
-    val content: String = readFileAsString(simplified)
+    val taskPath = Paths.get(pwd, "tasks", appName, taskType, taskName)
+    val filePath = Paths.get(taskPath.toString, taskName + ".zip")
+
+    // Zips the task if it's not already done yet
+    this.zipDirIfNotExist(
+      dirPath=taskPath.toString,
+      zipPath=filePath.toString,
+    )
+    val content: String = readFileAsString(filePath.toString)
     // Encoding the file using Base64encoder
     val encoded = new BASE64Encoder().encode(content.getBytes(Charsets.UTF_8))
     return encoded.toString
