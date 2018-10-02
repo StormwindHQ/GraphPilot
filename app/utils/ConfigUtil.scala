@@ -1,11 +1,10 @@
 package utils
-
 /**
   * ConfigHelper is an abstraction layer to retrieve neccessary
-  * variables for operations within the application. ConfigHelper convers
+  * variables for operations within the application. ConfigUtil convers
   * the domains including OpenWhisk, database and etc.
   */
-object ConfigHelper {
+class ConfigUtil {
   /**
     * sys.env.get simple wrapper
     * @param name

@@ -1,0 +1,23 @@
+{
+  "nodes": [
+    { "id": "task_1", "guid": "trigger_12938x12938", "taskApp": "github", "taskType": "trigger", "taskName": "on_wiki_update", "chart": { "x": 12, "y": 39 } },
+    { "id": "task_2", "guid": "action_12983xcv", "taskApp": "github", "taskType": "action", "taskName": "create_issue", "chart": { "x": 55, "y": 203 } },
+    { "id": "task_3", "guid": "action_3432aa", "taskApp": "conditions", "taskType": "condition", "taskName": "wait", "payload": { "delay": 5000 }, "chart": { "x": 232, "y": 111 } },
+    { "id": "task_4", "guid": "action_634643asd1", "taskApp": "github", "taskType": "action", "taskName": "create_commit", "payload": {
+      "task_1": {
+        "body": "${task_2.title} has been updated!"
+      },
+      "task_5": {
+        "body": "a message \"${task_5.message}\" was sent from discord!"
+      }
+
+    }, "chart": { "x": 232, "y": 111 } },
+    { "id": "task_5", "guid": "trigger_3928429xx", "taskApp": "discord", "taskType": "trigger", "taskName": "on_new_message",  "chart": { "x": 232, "y": 111 } }
+  ],
+  "edges": [
+    { "from": "task_1", "to": "task_2" },
+    { "from": "task_2", "to": "task_3" },
+    { "from": "task_3", "to": "task_4" },
+    { "from": "task_5", "to": "task_4" }
+  ]
+}
