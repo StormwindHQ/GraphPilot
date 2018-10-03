@@ -5,7 +5,7 @@
 openwhisk-master
 openwhisk-master*
 openwhisk-catalog
-compose/*.tar.gz
+.compose/*.tar.gz
 
 # cli
 bin/

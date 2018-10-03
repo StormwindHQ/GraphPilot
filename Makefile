@@ -17,7 +17,7 @@ export
 LOCAL_IP ?= "localhost"
 
 ## Initiates frontend development environment. Default port is set to 9001
-dev: compose-run
+frontend-dev:
 	sbt "~run -Dconfig.resource=development.conf ${APP_PORT}"
 
 frontend-clean:
