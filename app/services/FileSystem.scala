@@ -1,7 +1,7 @@
 package services
 import javax.inject._
 import sun.misc.{ BASE64Encoder, BASE64Decoder }
-import better.files._
+import better.files.{File => ScalaFile}
 import java.io.{ FileInputStream, FileOutputStream }
 import org.apache.commons.codec.binary.Base64
 import com.google.common.io.CharStreams
@@ -15,8 +15,11 @@ import com.google.common.base.Charsets
   * The service aim to provide easy-to-use file R/W operations throughout Stormwind.io code base.
   * It will have utilities such as getActionAsBase64
   */
-class FileSystem {
-
+class FileSystem () {
+  /**
+    * Map ScalaFile to File for test mocking
+    */
+  val File = ScalaFile
   /**
     * Read file as a string
     *
@@ -55,7 +58,7 @@ class FileSystem {
     taskType: String,
     taskName: String,
     force: Boolean = true
-  ): Unit = {
+  ): Boolean = {
     val pwd = System.getProperty("user.dir")
     val dirPath = s"${pwd}/tasks/${appName}/${taskType}/${taskName}"
     val zipPath = s"${dirPath}/${taskName}.zip"
@@ -68,6 +71,7 @@ class FileSystem {
     if (!zipFile.exists()) {
       dir.zipTo(zipFile.path)
     }
+    true
   }
 
   /**
