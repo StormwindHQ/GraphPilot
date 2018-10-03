@@ -24,6 +24,29 @@ class FileSystemSpec extends PlaySpec {
         result must equal(expected)
       }
 
+      "should return an empty result for empty string input" in {
+        val expected = "";
+        val fs = new FileSystem {
+          override def readFileAsString(name: String): String = ""
+        }
+        val result = fs.getActionAsBase64("github", "actions", "create_issue")
+        result must equal(expected)
+      }
+
     }
+
+    "zipTaskIfNotExist" should {
+      "return true without errors" in {
+
+        /* val fs = new FileSystem {
+          override val File = FakeFile
+        }
+
+        val result = fs.zipTaskIfNotExist("github", "hello", "zz") */
+        // TODO: Finish implementing it
+        true must equal(true)
+      }
+    }
+
   }
 }
