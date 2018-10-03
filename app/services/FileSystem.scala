@@ -1,13 +1,11 @@
 package services
 import javax.inject._
-import sun.misc.{BASE64Encoder, BASE64Decoder}
+import sun.misc.{ BASE64Encoder, BASE64Decoder }
 import better.files._
-import java.io.{File => JFile, FileInputStream, FileOutputStream}
-import java.nio.file.{Paths, Files => JFiles}
-import com.google.common.io.{Files => GFiles}
+import java.io.{ FileInputStream, FileOutputStream }
 import org.apache.commons.codec.binary.Base64
 import com.google.common.io.CharStreams
-import java.io.{InputStream, InputStreamReader}
+import java.io.{ InputStream, InputStreamReader }
 import com.google.common.base.Charsets
 
 /**
@@ -21,13 +19,19 @@ class FileSystem {
 
   /**
     * Read file as a string
+    *
+    * @example
+    * val fs = new FileSystem
+    * fs.readFileAsString("~/tmp/test.txt")
+    * // returns a base64 representation of the file
+    *
     * @param path
     * @return
     * @sideEffect
     */
   def readFileAsString(path: String): String = {
     // Reading the file as a FileInputStream
-    val fileInputStream = new FileInputStream(new JFile(path))
+    val fileInputStream = new FileInputStream(File(path).toJava)
     // TODO: Is there a way to read as Bytes directly?
     val str = CharStreams.toString(new InputStreamReader(fileInputStream, Charsets.UTF_8))
     return str
@@ -44,20 +48,25 @@ class FileSystem {
     * @param appName
     * @param taskType
     * @param taskName
-    * @param force
+    * @param force - Forcefully delete the existing zip file
     */
   def zipTaskIfNotExist(
     appName: String,
     taskType: String,
     taskName: String,
-    force: Boolean
+    force: Boolean = true
   ): Unit = {
     val pwd = System.getProperty("user.dir")
-    val dirPath = Paths.get(pwd, "tasks", appName, taskType, taskName).toString
-    val zipPath = Paths.get(dirPath.toString, taskName + ".zip").toString
+    val dirPath = s"${pwd}/tasks/${appName}/${taskType}/${taskName}"
+    val zipPath = s"${dirPath}/${taskName}.zip"
+    val dir = File(dirPath)
+    val zipFile = File(zipPath)
+    if (force && zipFile.exists()) {
+      zipFile.delete()
+    }
 
-    if (!JFiles.exists(Paths.get(zipPath))) {
-      File(dirPath).zipTo(File(zipPath))
+    if (!zipFile.exists()) {
+      dir.zipTo(zipFile.path)
     }
   }
 
@@ -67,7 +76,10 @@ class FileSystem {
     * by passing in the base64 representation of the ZIP file.
     *
     * @example
-    * add exmaple
+    * val fs = new FileSystem
+    * // Execution of the code below return a base64 representation of the task
+    * val result = fs.getActionAsBase64("github", "triggers", "list_webhooks")
+    *
     * @param appName - application name such as Github
     * @param taskType - taskType can be either actions or triggers
     * @param taskName - name of the task such as create_issue
@@ -81,10 +93,10 @@ class FileSystem {
     readFileAsString: (String) => String = this.readFileAsString
   ): String = {
     val pwd = System.getProperty("user.dir")
-    val taskPath = Paths.get(pwd, "tasks", appName, taskType, taskName)
-    val filePath = Paths.get(taskPath.toString, taskName + ".zip")
+    val dirPath = s"${pwd}/tasks/${appName}/${taskType}/${taskName}"
+    val zipPath = s"${dirPath}/${taskName}.zip"
 
-    val content: String = readFileAsString(filePath.toString)
+    val content: String = readFileAsString(zipPath)
     // Encoding the file using Base64encoder
     val encoded = new BASE64Encoder().encode(content.getBytes(Charsets.UTF_8))
     return encoded.toString
