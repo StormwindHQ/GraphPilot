@@ -46,7 +46,7 @@ class FileSystem () {
     *
     * @example
     * fs.zipDirIfNotExist("github", "triggers", "list_webhooks")
-    * // creates a zip file under tasks/github/list_webhooks/list_webhooks.zip
+    * // creates a zip file under tasks/github/triggers/list_webhooks/list_webhooks.zip
     *
     * @param appName
     * @param taskType
