@@ -20,9 +20,9 @@
     <div>
         @message
         hey!
-        @form(routes.PipelineController.createPipeline()) {
+        @form(routes.TaskController.createTask()) {
             @CSRF.formField
-            <input type="submit" value="Create a pipeline" class="btn">
+            <input type="submit" value="Create a task" class="btn">
         }
         <a href="@(routes.TaskController.listTasks())">See a list of actions</a>
     </div>

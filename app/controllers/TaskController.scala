@@ -11,6 +11,7 @@ import play.api.data.Form
 import play.api.data.Forms.{ date, longNumber, mapping, nonEmptyText, optional, text }
 import play.filters.csrf._
 import play.filters.csrf.CSRF.Token
+import play.api.libs.json._
 import services.{ WskService, TaskKind }
 
 import models.Pipeline
@@ -36,6 +37,31 @@ class TaskController @Inject()(
     wsk.listTasks().map {
       response => Ok(response)
     }
+  }
+
+  /**
+    * Creates a Task
+    * @return status
+    */
+  def createTask = Action.async { implicit request =>
+    val inputs: JsValue = JsObject(Seq(
+      "title" -> JsString("Hello world!"),
+      "body" -> JsString("Hey!!"),
+      "state" -> JsString("open"),
+      "labels" -> JsArray(IndexedSeq(
+        JsString("bug")
+      )),
+      "assignees" -> JsArray(IndexedSeq(
+        JsString("Jason")
+      ))
+    ))
+    wsk.createTask(
+      appName="github",
+      taskType="triggers",
+      taskName="list_webhooks",
+      kind=TaskKind.node6,
+      inputs=inputs
+    ).map { response => Ok(response) }
   }
 
 }
