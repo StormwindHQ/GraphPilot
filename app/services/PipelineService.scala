@@ -1,6 +1,5 @@
 package services
-
-import dao.{ PipelineDAO, PipelineTaskDAO }
+import play.api.libs.json._
 
 /**
   MVP 1 Plan
@@ -11,16 +10,15 @@ import dao.{ PipelineDAO, PipelineTaskDAO }
   */
 
 class PipelineService {
-  private val pipelineTaskDao: PipelineTaskDAO = new PipelineTaskDAO
   /**
-    * Run an entire pipeline in memory
+    * Creates a pipeline according to the pipelineScript. It should create multidimentional sequences and
+    * track the pipeline as a database entity, which can be later retrieved, deleted or updated.
     * @param id
     */
-  def runInMemory(id: Option[Long]): Unit = {
-    print("Run a pipeline service")
-    val pipelineTasks = pipelineTaskDao.findByPipeline(id)
-    pipelineTasks.foreach {
-      println
-    }
+  def create(pipelineScript: JsValue): Boolean = {
+    val nodes = (pipelineScript \ "nodes").as[List[JsValue]]
+    val edges = (pipelineScript \ "edges").as[List[JsValue]]
+    print("nodes", nodes, edges)
+    true
   }
 }

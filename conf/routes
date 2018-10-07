@@ -21,5 +21,7 @@ GET     /assets/*file               controllers.Assets.versioned(file)
 
 # OpenWhisk
 GET     /pipeline                   controllers.PipelineController.index
-POST    /task                   controllers.TaskController.createTask
+POST    /pipeline                   controllers.PipelineController.createPipeline
+
 GET     /tasks                      controllers.TaskController.listTasks
+POST    /task                       controllers.TaskController.createTask
