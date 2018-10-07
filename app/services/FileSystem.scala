@@ -1,11 +1,17 @@
 package services
+import com.google.common.io.CharStreams
 import javax.inject._
 import sun.misc.{ BASE64Encoder, BASE64Decoder }
 import better.files.{File => ScalaFile}
-import java.io.{ FileInputStream, FileOutputStream }
 import org.apache.commons.codec.binary.Base64
-import com.google.common.io.CharStreams
-import java.io.{ InputStream, InputStreamReader }
+import scala.io.BufferedSource
+import scala.io.Codec
+import java.io.{
+  File => JFile, InputStreamReader,
+  FileInputStream, FileOutputStream, InputStream,
+  IOException, OutputStream
+}
+import java.util.zip.{ZipEntry, ZipFile, ZipOutputStream}
 import com.google.common.base.Charsets
 
 /**
@@ -61,7 +67,7 @@ class FileSystem () {
   ): Boolean = {
     val pwd = System.getProperty("user.dir")
     val dirPath = s"${pwd}/tasks/${appName}/${taskType}/${taskName}"
-    val zipPath = s"${dirPath}/${taskName}.zip"
+    val zipPath = s"/home/jason/tmp/${taskName}.zip"
     val dir = File(dirPath)
     val zipFile = File(zipPath)
     if (force && zipFile.exists()) {
@@ -69,8 +75,13 @@ class FileSystem () {
     }
 
     if (!zipFile.exists()) {
-      dir.zipTo(zipFile.path)
+      val zipUtil = new ZipArchiveUtil
+      val jDir = dir.toJava
+      val filePaths = zipUtil.createFileList(jDir, zipPath)
+      zipUtil.createZip(filePaths, zipPath, dirPath)
+      // dir.zipTo(zipFile.path) // bug reported https://github.com/pathikrit/better-files/issues/268
     }
+
     true
   }
 
@@ -105,4 +116,75 @@ class FileSystem () {
     val encoded = new BASE64Encoder().encode(content.getBytes(Charsets.UTF_8))
     return encoded.toString
   }
+}
+
+/**
+  * Util Script to zip an archive
+  * Original Source: https://github.com/dhbikoff/Scala-Zip-Archive-Util/blob/master/ZipArchiveUtil.scala
+  * @example
+  * val zipUtil = new ZipArchiveUtil
+  * val dirToZip = File("/home/jason/tmp/hello")
+  * val zipPath = s"{dirToZip.path}/hello.zip"
+  * val filePaths = zipUtil.createFileList(dirToZip, zipPath)
+  * zipUtil.createZip(filePaths, zipPath, dirToZip.path)
+  *
+  */
+class ZipArchiveUtil {
+  def createFileList(file: JFile, outputFilename: String): List[String] = {
+    file match {
+      case file if file.isFile => {
+        if (file.getName != outputFilename)
+          List(file.getAbsoluteFile.toString)
+        else
+          List()
+      }
+      case file if file.isDirectory => {
+        val fList = file.list
+        // Add all files in current dir to list and recur on subdirs
+        fList.foldLeft(List[String]())((pList: List[String], path: String) =>
+          pList ++ createFileList(new JFile(file, path), outputFilename))
+      }
+      case _ => throw new IOException("Bad path. No file or directory found.")
+    }
+  }
+
+  def addFileToZipEntry(filename: String, parentPath: String,
+                        filePathsCount: Int): ZipEntry = {
+    if (filePathsCount <= 1)
+      new ZipEntry(new JFile(filename).getName)
+    else {
+      // use relative path to avoid adding absolute path directories
+      val relative = new JFile(parentPath).toURI.
+        relativize(new JFile(filename).toURI).getPath
+      new ZipEntry(relative)
+    }
+  }
+
+  def createZip(filePaths: List[String], outputFilename: String,
+                parentPath: String) = {
+    try {
+      val fileOutputStream = new FileOutputStream(outputFilename)
+      val zipOutputStream = new ZipOutputStream(fileOutputStream)
+
+      filePaths.foreach((name: String) => {
+        println("adding " + name)
+        val zipEntry = addFileToZipEntry(name, parentPath, filePaths.size)
+        zipOutputStream.putNextEntry(zipEntry)
+        val inputSrc = new BufferedSource(
+          new FileInputStream(name))(Codec.ISO8859)
+        inputSrc foreach { c: Char => zipOutputStream.write(c) }
+        inputSrc.close
+      })
+
+      zipOutputStream.closeEntry
+      zipOutputStream.close
+      fileOutputStream.close
+
+    } catch {
+      case e: IOException => {
+        e.printStackTrace
+      }
+    }
+  }
+
 }

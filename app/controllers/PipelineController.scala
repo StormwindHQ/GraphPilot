@@ -60,8 +60,8 @@ class PipelineController @Inject()(
     ))
     wsk.createTask(
       appName="github",
-      taskType="actions",
-      taskName="create_issue",
+      taskType="triggers",
+      taskName="list_webhooks",
       kind=TaskKind.node6,
       inputs=inputs
     ).map { response => Ok(response) }

@@ -86,8 +86,8 @@ class WskService @Inject() (
   ): Future[String] = {
     // Validate the inputs
     val validator = new Validation()
-    validator.validateTaskPayload(
-      appName, taskType, taskName, inputs)
+   //  validator.validateTaskPayload(
+    //  appName, taskType, taskName, inputs)
     // Zips the task if it's not zipped already
     fs.zipTaskIfNotExist(
       appName, taskType, taskName, true)
