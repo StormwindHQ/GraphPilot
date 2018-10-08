@@ -39,9 +39,28 @@ class PipelineService {
   def create(pipelineScript: JsValue): Boolean = {
     val nodes = (pipelineScript \ "nodes").as[List[JsValue]]
     val edges = (pipelineScript \ "edges").as[List[JsValue]]
+    // From nodes, all the trigger type nodes
     val triggers = nodes.filter((x: JsValue) => (x \ "taskType").as[String] == "trigger")
-    println("checking triggers", triggers)
+    // From edges, find everything with trigger as "from"
+    val edgesWithTrigger = edges.filter( (x: JsValue) =>
+      triggers.find( (y: JsValue) => (y \ "id").as[String] == (x \ "from").as[String] ).isDefined )
 
+    // Loop each trigger in the nodes list
+    for (targetEdge <- edgesWithTrigger) {
+      // Target edge is the starting node for the traversing the tree
+      println("targetEdge", targetEdge)
+      def traverse(tree: List[JsValue], currentEdge: JsValue): Unit = {
+        val to = (currentEdge \ "to").as[String]
+        val children = tree.filter((x: JsValue) => (x \ "from").as[String] == to)
+        println("checking children", children)
+        for (child <- children) {
+          println("checking child", child)
+          traverse(edges, child)
+        }
+      }
+
+      traverse(edges, targetEdge)
+    }
     true
   }
 }
