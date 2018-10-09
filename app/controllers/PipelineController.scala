@@ -62,13 +62,15 @@ class PipelineController @Inject()(
            "to": "task_2",
            "payload": {
              "title": "Creating a new issue for fun!",
-             "body": "${task_1.title} was updated just now!"
+             "body": "${task_1.createdDate} ${task_1.title} was updated just now!"
            }
          },
          {
            "from": "task_2",
            "to": "task_3",
            "payload": {
+             "title": "Creating a new issue for fun!",
+             "body": "${task_1.createdDate}"
              "delay": 5000
            }
          },
@@ -80,6 +82,7 @@ class PipelineController @Inject()(
            "from": "task_3",
            "to": "task_4",
            "payload": {
+             "delay": 5000,
              "message": "As a result of wiki article ${task_1.title} update, now the system will make a new commit"
            }
          },

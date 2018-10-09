@@ -18,6 +18,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "3.0.0",
   "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0"
 )
+libraryDependencies += "org.scala-graph" %% "graph-core" % "1.12.5"
 libraryDependencies += "com.h2database" % "h2" % "1.4.197"
 libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.8.6"
 libraryDependencies += ws

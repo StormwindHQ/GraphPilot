@@ -1,5 +1,6 @@
 package services
 import play.api.libs.json._
+import scala.collection.mutable.ArrayBuffer
 
 /**
   MVP 1 Plan
@@ -46,19 +47,22 @@ class PipelineService {
       triggers.find( (y: JsValue) => (y \ "id").as[String] == (x \ "from").as[String] ).isDefined )
 
     // Loop each trigger in the nodes list
+    // example output
+    // [ [1], [2, 3, 4] [2, 4], [5, 4] ]
     for (targetEdge <- edgesWithTrigger) {
       // Target edge is the starting node for the traversing the tree
-      println("targetEdge", targetEdge)
+
+      val list = ArrayBuffer[Any]()
       def traverse(tree: List[JsValue], currentEdge: JsValue): Unit = {
+        val from = (currentEdge \ "from").as[String]
         val to = (currentEdge \ "to").as[String]
         val children = tree.filter((x: JsValue) => (x \ "from").as[String] == to)
-        println("checking children", children)
+        list.append((from, to))
         for (child <- children) {
-          println("checking child", child)
+          // If children is larger than 1 in length, create new arrays
           traverse(edges, child)
         }
       }
-
       traverse(edges, targetEdge)
     }
     true
