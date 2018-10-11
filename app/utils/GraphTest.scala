@@ -21,41 +21,36 @@ class GraphTest {
     // Example graph
     val nodes = List(1, 2, 3, 4, 5)
     val z = Graph(1~>2, 2~>3, 2~>4, 3~>4, 5~>4)
-    println(z)
-    def n(outer: Int): z.NodeT = z get outer  // look up 'outer' that is known to be contained
-    println(n(1) shortestPathTo n(4))
-    println(n(1) pathTo n(4))
-    println(n(2) pathTo n(4))
-    println(n(1) pathUntil (_.degree >= 90))
-    println("finding any!")
-    println(n(2) findSuccessor (_.outDegree >  1))
-    println(n(1))
-    // Core User Guide: Inner and Outer Objects
-    println(z.edges)
-    println(z.edges.head)
-    println(z.edges.head.toOuter)
-    val traversal = z.get(1)
-    println(traversal.pathTo(z.get(4)))
-    println(z.get(2).pathTo(z.get(4)))
 
-
-    def getAllPaths(g: z.NodeT, paths: List[Any]): Unit = {
+    def getAllPaths(g: z.NodeT, paths: List[z.NodeT]): List[Any] = {
       val directs = g.diSuccessors.toList
 
       if (directs.length == 0) {
+        // Dead end
+        println("dead end", paths, directs)
         paths
+      } else if (directs.length == 1) {
+        // Node with single direction, simply returns itself
+        if (paths.length == 0) {
+          println("single direct", paths, g)
+          // instead of appending successor, append itself
+          getAllPaths(directs(0), paths :+ g)
+        } else {
+          println("single direct", paths, directs(0))
+
+          getAllPaths(directs(0), paths :+ directs(0))
+        }
       } else {
-        println(directs(0).diSuccessors, paths)
-        getAllPaths(directs(0), paths :+ directs(0))
+        var newResult = List[z.NodeT]()
+        directs.map(d => {
+          println("in the map", d, paths)
+          paths ::: getAllPaths(d, paths :+ d)
+        })
       }
-      /* for (node <- directs) {
-        getAllPaths(node, paths :+ node)
-      } */
     }
-    val accum = List[Any]()
+    val accum = List[z.NodeT]()
 
     println(getAllPaths(z.get(1), accum))
-    println(accum)
   }
 }
 
