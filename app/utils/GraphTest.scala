@@ -27,24 +27,19 @@ class GraphTest {
 
       if (directs.length == 0) {
         // Dead end
-        println("dead end", paths, directs)
         paths
       } else if (directs.length == 1) {
         // Node with single direction, simply returns itself
         if (paths.length == 0) {
-          println("single direct", paths, g)
           // instead of appending successor, append itself
-          getAllPaths(directs(0), paths :+ g)
+          getAllPaths(directs(0), paths :+ g :+ directs(0))
         } else {
-          println("single direct", paths, directs(0))
-
           getAllPaths(directs(0), paths :+ directs(0))
         }
       } else {
         var newResult = List[z.NodeT]()
         directs.map(d => {
-          println("in the map", d, paths)
-          paths ::: getAllPaths(d, paths :+ d)
+          getAllPaths(d, paths :+ d)
         })
       }
     }
