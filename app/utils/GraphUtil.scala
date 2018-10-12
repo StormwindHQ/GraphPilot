@@ -1,53 +1,9 @@
-package controllers
+package utils
 
-import javax.inject._
-
-import play.api.db._
-import play.api.mvc._
-import play.api.db.slick.DatabaseConfigProvider
-import play.api.libs.concurrent.Execution.Implicits._
-
-import play.api.data.Form
-import play.api.data.Forms.{ date, longNumber, mapping, nonEmptyText, optional, text }
-import play.filters.csrf._
-import play.filters.csrf.CSRF.Token
 import play.api.libs.json._
-import services.{ WskService, TaskKind, PipelineService }
 
-import models.Pipeline
-
-import play.api.libs.ws._
-
-/**
-  * This controller creates an `Action` to handle HTTP requests to the
-  * application's home page.
-  */
-@Singleton
-class PipelineController @Inject()(
-  cc: MessagesControllerComponents,
-  wsk: WskService,
-  ws: WSClient,
-  ps: PipelineService,
-)(implicit assetsFinder: AssetsFinder) extends MessagesAbstractController(cc) {
-
-  val pipelineForm = Form(
-    mapping(
-      "id"  -> optional(longNumber)
-    )(Pipeline.apply)(Pipeline.unapply)
-  )
-
-  def index = Action.async { implicit request =>
-    wsk.listNamespaces().map {
-      response => Ok(views.html.index(response, pipelineForm))
-    }
-  }
-
-  /**
-    * Add a pipeline
-    * @return
-    */
-  def createPipeline = Action { implicit request =>
-
+class GraphUtil {
+  def test(): Unit ={
     val inputs: JsValue = Json.parse("""
       {
        "nodes": [
@@ -96,8 +52,61 @@ class PipelineController @Inject()(
        ]
       }
     """)
-    ps.create(inputs)
-    Ok("testing!")
+    println(getAllPaths(inputs, "task_1"))
   }
 
+  /**
+    * Retreives a simple list of direct successors' IDs from a node
+    *
+    * @example
+    * // .. [{ from: "t1", to: "t2" }, { from: "t2", to: "t3" }, { from: "t3", to: "t4" }]
+    * getDirectSuccessors(graph, "t2")
+    * // Result: [ "t3" ]
+    *
+    * @param json
+    * @param node
+    * @return
+    */
+  def getDirectSuccessors(graph: JsValue, node: String): List[String] = {
+    val edges = (graph \ "edges").get
+    val sources = edges.as[List[JsValue]].filter(x => (x \ "from").as[String] == node)
+    sources.map(x => (x \ "to").as[String])
+  }
+
+  /**
+    * Get all paths until there are no more direct successors left
+    *
+    * @example
+    * // .. [{ from: "t1", to: "t2" }, { from: "t2", to: "t3" }, { from: "t3", to: "t4" }]
+    * getAllPaths(graph, "t1")
+    * // Result: [ ["t1", "t2", "t3", "t4"] ]
+    *
+    * @param graph
+    * @param startingNode
+    * @return
+    */
+  def getAllPaths(graph: JsValue, startingNode: String): List[Any] = {
+    def traverse(node: String, paths: List[String]): List[Any] = {
+      val directs = getDirectSuccessors(graph, node)
+      if (directs.length == 0) {
+        // Dead end
+        paths
+      } else if (directs.length == 1) {
+        // Node with single direction, simply returns itself
+        if (paths.length == 0) {
+          // instead of appending successor, append itself
+          traverse(directs(0), paths :+ startingNode :+ directs(0))
+        } else {
+          traverse(directs(0), paths :+ directs(0))
+        }
+      } else {
+        directs.map(d => {
+          traverse(d, paths :+ d)
+        })
+      }
+    }
+    val accum = List[String]()
+    traverse(startingNode, accum)
+  }
 }
+
