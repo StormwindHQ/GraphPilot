@@ -2,6 +2,16 @@ package utils
 
 import play.api.libs.json._
 
+/**
+  * A custom graph theory utility based on the simplicity
+  *
+  * Philosophies
+  * - Given a JSON, return a pure value
+  * - Given an value and a JSON, result a JSON
+  * - Given a JSON, return a JSON
+  * - Strictly follows the Graph Theory
+  * - JSON data is based on ScalaJson
+  */
 class GraphUtil {
 
   /**
