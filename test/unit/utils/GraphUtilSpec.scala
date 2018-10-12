@@ -9,7 +9,7 @@ import play.api.libs.json._
 import utils.GraphUtil
 
 class GraphUtilSpec extends PlaySpec {
-  val graph: JsValue = Json.parse("""
+  val graph1: JsValue = Json.parse("""
   {
    "nodes": [
      { "id": "task_1", "guid": "trigger_12938x12938", "taskApp": "github", "taskType": "trigger", "taskName": "on_wiki_update", "chart": { "x": 12, "y": 39 } },
@@ -60,14 +60,24 @@ class GraphUtilSpec extends PlaySpec {
   "GraphUtil:getDirectSuccessors" should {
     "return a correct single successor for task_1" in {
       val graphUtil = new GraphUtil
-      val result = graphUtil.getDirectSuccessors(graph, "task_1")
+      val result = graphUtil.getDirectSuccessors(graph1, "task_1")
       val expected = List("task_2")
       result must equal(expected)
     }
-    "result a multiple successors for task_2" in {
+    "return a multiple successors for task_2" in {
       val graphUtil = new GraphUtil
-      val result = graphUtil.getDirectSuccessors(graph, "task_2")
+      val result = graphUtil.getDirectSuccessors(graph1, "task_2")
       val expected = List("task_3", "task_4")
+      result must equal(expected)
+    }
+    // Test graph loops
+  }
+
+  "GraphUtil:getAllPaths" should {
+    "return multiple paths from the starting point task_1" in {
+      val graphUtil = new GraphUtil
+      val result = graphUtil.getAllPaths(graph1, "task_1")
+      val expected = List(List("task_1", "task_2", "task_3", "task_4"), List("task_1", "task_2", "task_4"))
       result must equal(expected)
     }
   }
