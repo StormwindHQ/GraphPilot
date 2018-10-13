@@ -83,7 +83,7 @@ class GraphUtilSpec extends PlaySpec {
     "result a single path from the starting point task_5" in {
       val graphUtil = new GraphUtil
       val result = graphUtil.getAllPaths(graph1, "task_5")
-      val expected = List("task_5", "task_4")
+      val expected = List(List("task_5", "task_4"))
       result must equal(expected)
     }
   }
