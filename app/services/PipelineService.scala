@@ -38,7 +38,6 @@ class PipelineService {
     // create tasks
     println("creating a sequence for", sequence)
     sequence.foreach(x => createTask(graph, x))
-
   }
 
   def createTask(graph: JsValue, id: String): Unit ={
@@ -46,7 +45,6 @@ class PipelineService {
     val taskNode = util.getNodesByKeyVal(graph, "id", id)
     println("Found a task node", taskNode)
   }
-
   /**
     * Creates a pipeline according to the pipelineScript. It should create multidimentional sequences and
     * track the pipeline as a database entity, which can be later retrieved, deleted or updated.
@@ -55,22 +53,9 @@ class PipelineService {
   def create(graph: JsValue): Boolean = {
     val util = new GraphUtil
     val triggerNodes = (graph \ "nodes").as[List[JsValue]].filter(x => (x \ "taskType").as[String] == "trigger")
-    val paths = triggerNodes.map(x => util.getAllPaths(graph, (x \ "id").as[String]))
+    val paths = triggerNodes.map(x => util.getAllPaths(graph, (x \ "id").as[String])).flatten
 
-    // Loop
-    for (sequenceGroup <- paths) {
-      for (maybeSequence <- sequenceGroup) {
-        maybeSequence match {
-          case (x: String) => {
-            createTask(graph, x)
-          }
-          case (x: List[String]) => x.foreach(z => {
-            createTask(graph, z)
-          })
-          case _ => println("unknown type")
-        }
-      }
-    }
+    println(paths)
     true
   }
 }

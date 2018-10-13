@@ -50,10 +50,7 @@ class GraphUtil {
   def getAllPaths(graph: JsValue, startingNode: String): List[Any] = {
     def traverse(node: String, paths: List[String]): List[Any] = {
       val directs = getDirectSuccessors(graph, node)
-      if (directs.length == 0) {
-        // Dead end
-        paths
-      } else if (directs.length == 1) {
+      if (directs.length == 1) {
         // Node with single direction, simply returns itself
         if (paths.length == 0) {
           // instead of appending successor, append itself
@@ -61,14 +58,22 @@ class GraphUtil {
         } else {
           traverse(directs(0), paths :+ directs(0))
         }
-      } else {
+      } else if (directs.length > 1) {
         directs.map(d => {
           traverse(d, paths :+ d)
         })
+      } else {
+        paths
       }
     }
+
     val accum = List[String]()
-    traverse(startingNode, accum)
+    val rawResult = traverse(startingNode, accum)
+
+    rawResult(0) match {
+      case x: String => List(rawResult)
+      case x: List[String] => rawResult
+    }
   }
 }
 
