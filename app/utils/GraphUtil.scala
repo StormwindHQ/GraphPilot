@@ -1,5 +1,6 @@
 package utils
 
+import scala.collection.mutable.{ ListBuffer }
 import play.api.libs.json._
 
 /**
@@ -47,7 +48,8 @@ class GraphUtil {
     * @param startingNode
     * @return
     */
-  def getAllPaths(graph: JsValue, startingNode: String): List[Any] = {
+  def getAllPaths(graph: JsValue, startingNode: String): List[List[String]] = {
+    val listUtil = new ListUtil
     def traverse(node: String, paths: List[String]): List[Any] = {
       val directs = getDirectSuccessors(graph, node)
       if (directs.length == 1) {
@@ -68,11 +70,18 @@ class GraphUtil {
     }
 
     val accum = List[String]()
-    val rawResult = traverse(startingNode, accum)
-
-    rawResult(0) match {
-      case x: String => List(rawResult)
-      case x: List[String] => rawResult
-    }
+    val result = traverse(startingNode, accum)
+    val flatResult = listUtil.flatten(result).asInstanceOf[List[String]]
+    val filteredResult = listUtil
+      .split(flatResult, "task_1")
+      // Remove any empty lists
+      .filter(x => x.length > 0)
+      // Re-prepend the starting node that was removed due to splitting
+      .map(x => startingNode :: x)
+      // Remove any duplicates
+      .map(x => x.distinct)
+    filteredResult
   }
+
+
 }

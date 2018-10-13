@@ -42,6 +42,7 @@ class PipelineService {
 
   def createTask(graph: JsValue, id: String): Unit ={
     val util = new GraphUtil
+    print("create task key", id)
     val taskNode = util.getNodesByKeyVal(graph, "id", id)
     println("Found a task node", taskNode)
   }
@@ -53,9 +54,12 @@ class PipelineService {
   def create(graph: JsValue): Boolean = {
     val util = new GraphUtil
     val triggerNodes = (graph \ "nodes").as[List[JsValue]].filter(x => (x \ "taskType").as[String] == "trigger")
-    val paths = triggerNodes.map(x => util.getAllPaths(graph, (x \ "id").as[String])).flatten
-
+    val paths = triggerNodes
+      .map(x => util.getAllPaths(graph, (x \ "id").as[String]))
+      .flatten
     println(paths)
+    // Loop each flattened paths
+    // paths.foreach(x => createSequence(graph, x))
     true
   }
 }

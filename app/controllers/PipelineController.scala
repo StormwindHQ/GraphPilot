@@ -79,6 +79,18 @@ class PipelineController @Inject()(
            "to": "task_4"
          },
          {
+            "from": "task_2",
+            "to": "task_10"
+         },
+         {
+            "from": "task_10",
+            "to": "task_11"
+         },
+         {
+            "from": "task_10",
+            "to": "task_12"
+         },
+         {
            "from": "task_3",
            "to": "task_4",
            "payload": {
