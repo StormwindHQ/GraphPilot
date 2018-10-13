@@ -28,6 +28,39 @@ object TaskKind extends Enumeration {
   val swift3 = Value("swift:3.1.1")
 }
 
+trait FaaS {
+  /**
+    * Lists the available namespaces. It may not be available for
+    * all FaaS services.
+    * @return
+    */
+  def listNamespaces(): Future[String]
+
+  /**
+    * Creates a task according to the below arguments
+    * @param appName
+    * @param taskType
+    * @param taskName
+    * @param kind
+    * @param inputs
+    * @return
+    */
+  def createTask(
+    appName: String,
+    taskType: String,
+    taskName: String,
+    kind: TaskKind.Value,
+    inputs: JsValue
+  ): Future[String]
+
+  /**
+    * Returns a list of tasks
+    * @return
+    */
+  def listTasks(): Future[String]
+
+}
+
 /**
   * WskService.scala
   *
@@ -50,12 +83,12 @@ class WskService @Inject() (
   ws: WSClient,
   fs: FileSystem,
   config: ConfigUtil,
-)(implicit executionContext: ExecutionContext) {
+)(implicit executionContext: ExecutionContext) extends FaaS {
   /**
     * Get available name spaces in the OpenWhisk instance
     * @return Future<String>
     */
-  def listNamespaces(): Future[String] = {
+  override def listNamespaces(): Future[String] = {
     // TODO: String interpolation + abstracted value
 
     ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces")
@@ -76,7 +109,7 @@ class WskService @Inject() (
     * @param kind
     * @return
     */
-  def createTask(
+  override def createTask(
     appName: String,
     taskType: String,
     taskName: String,
@@ -109,7 +142,7 @@ class WskService @Inject() (
     * Returns a list of tasks in the current OpenWhisk instance in a string format
     * @return
     */
-  def listTasks(): Future[String] = {
+  override def listTasks(): Future[String] = {
     ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions")
       .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
       .get()
