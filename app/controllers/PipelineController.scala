@@ -25,7 +25,7 @@ import play.api.libs.ws._
 @Singleton
 class PipelineController @Inject()(
   cc: MessagesControllerComponents,
-  wsk: WskService,
+  faas: WskService, // TODO: How do we inject dependency according to the settings? e.g. faas=aws should inject AwsService
   ws: WSClient,
   ps: PipelineService,
 )(implicit assetsFinder: AssetsFinder) extends MessagesAbstractController(cc) {
@@ -37,7 +37,7 @@ class PipelineController @Inject()(
   )
 
   def index = Action.async { implicit request =>
-    wsk.listNamespaces().map {
+    faas.listNamespaces().map {
       response => Ok(views.html.index(response, pipelineForm))
     }
   }
