@@ -1,8 +1,7 @@
 require('isomorphic-fetch');
 
 /**
- * The trigger script creates a Github webhook that fires
- * when a new issue is created. It will not create a duplicated
+ * Simply post a Markdown template and gets an actual markdown representation
  * webhook if it already exists.
  */
 const main = (param) => new Promise((resolve, reject) => {
