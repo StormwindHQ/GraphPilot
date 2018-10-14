@@ -25,7 +25,7 @@ class PipelineService {
     *
     * findEdgeById((inputs \ "edges").as[List[JsValue]], "task_1", "task_2)
     * // returns { "from": "task_1", "to": "task_2" }
-    *
+    * TODO: Remove it or move it to GraphUtil
     * @param edges
     * @param from
     * @param to
@@ -57,9 +57,8 @@ class PipelineService {
     val paths = triggerNodes
       .map(x => util.getAllPaths(graph, (x \ "id").as[String]))
       .flatten
-    println(paths)
     // Loop each flattened paths
-    // paths.foreach(x => createSequence(graph, x))
+    paths.foreach(x => createSequence(graph, x))
     true
   }
 }

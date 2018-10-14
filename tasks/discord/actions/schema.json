@@ -1,0 +1,10 @@
+{
+  "reference": "",
+  "inputs": [
+    {
+      "name": "delay",
+      "type": "number",
+      "required": true
+    }
+  ]
+}
