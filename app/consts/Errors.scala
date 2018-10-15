@@ -34,3 +34,12 @@ final case class FieldEnumException(
   private val fieldName: String,
   private val cause: Throwable = None.orNull)
   extends Exception(s"${fieldName} should be a correct enum value")
+
+/**
+  * When searching for a task by task_id returns more than one
+  * @param fieldName
+  * @param cause
+  */
+final case class MultipleTaskNodeException(
+  private val cause: Throwable = None.orNull)
+  extends Exception("Finding task by task id should return only 1 result")

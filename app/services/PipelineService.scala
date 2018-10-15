@@ -44,6 +44,7 @@ class PipelineService {
     val util = new GraphUtil
     print("create task key", id)
     val taskNode = util.getNodesByKeyVal(graph, "id", id)
+
     println("Found a task node", taskNode)
   }
   /**
