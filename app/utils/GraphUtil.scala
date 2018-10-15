@@ -14,6 +14,13 @@ import play.api.libs.json._
   * - JSON data is based on ScalaJson
   */
 class GraphUtil {
+  /**
+    * Retreives a node according to key and value
+    * @param graph
+    * @param key
+    * @param value
+    * @return
+    */
   def getNodesByKeyVal(graph: JsValue, key: String, value: String): List[JsValue] = {
     (graph \ "nodes").get.as[List[JsValue]].filter(x => (x \ key).as[String] == value)
   }

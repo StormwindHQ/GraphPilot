@@ -2,6 +2,8 @@ package controllers
 
 import javax.inject._
 
+import scala.concurrent.Future
+
 import play.api.db._
 import play.api.mvc._
 import play.api.db.slick.DatabaseConfigProvider
@@ -54,10 +56,10 @@ class PipelineController @Inject()(
     val graph: JsValue = Json.parse("""
       {
        "nodes": [
-         { "id": "task_1", "guid": "trigger_12938x12938", "taskApp": "github", "taskType": "trigger", "taskName": "on_wiki_update", "chart": { "x": 12, "y": 39 } },
-         { "id": "task_2", "guid": "action_12983xcv", "taskApp": "github", "taskType": "action", "taskName": "create_issue", "chart": { "x": 55, "y": 203 } },
-         { "id": "task_3", "guid": "action_3432aa", "taskApp": "conditions", "taskType": "condition", "taskName": "wait", "chart": { "x": 232, "y": 111 } },
-         { "id": "task_4", "guid": "action_634643asd1", "taskApp": "github", "taskType": "action", "taskName": "render_markdown", "chart": { "x": 312, "y": 11 } } ],
+         { "id": "task_1", "guid": "trigger_12938x12938", "taskApp": "github", "taskType": "triggers", "taskName": "on_wiki_update", "chart": { "x": 12, "y": 39 } },
+         { "id": "task_2", "guid": "action_12983xcv", "taskApp": "github", "taskType": "actions", "taskName": "create_issue", "chart": { "x": 55, "y": 203 } },
+         { "id": "task_3", "guid": "action_3432aa", "taskApp": "conditions", "taskType": "conditions", "taskName": "wait", "chart": { "x": 232, "y": 111 } },
+         { "id": "task_4", "guid": "action_634643asd1", "taskApp": "github", "taskType": "actions", "taskName": "render_markdown", "chart": { "x": 312, "y": 11 } } ],
        "edges": [
          {
            "from": "task_1",
@@ -92,13 +94,49 @@ class PipelineController @Inject()(
       }
     """)
 
-    val triggerNodes = (graph \ "nodes").as[List[JsValue]].filter(x => (x \ "taskType").as[String] == "trigger")
+    val triggerNodes = (graph \ "nodes").as[List[JsValue]].filter(x => (x \ "taskType").as[String] == "triggers")
     val paths = triggerNodes
       .map(x => graphUtil.getAllPaths(graph, (x \ "id").as[String]))
       .flatten
+    val deepFlatPaths = paths.flatten
+    // 1. filter only action tasks
+    // 2. create future maps
 
-    paths.foreach(sequence => createSequence(graph, sequence))
+    val taskFutures = deepFlatPaths.map {
+    }
+    println(sequenceFutures)
+    */
+    // println(paths.map(sequence => createSequence(graph, sequence)))
+    val l = List(1, 6, 8)
 
+    val f = l.map{
+      i => Future {
+        println("future " +i)
+        Thread.sleep(i* 1000)
+        if (i == 12)
+          throw new Exception("6 is not legal.")
+        i
+      }
+    }
+
+    val f1 = Future.sequence(f)
+
+    f1 onSuccess{
+      case l => {
+        println("onSuccess")
+        l.foreach(i => {
+
+          println("h : " + i)
+
+        })
+      }
+    }
+
+    f1 onFailure {
+      case l => {
+        println("onFailure")
+      }
+    }
     Ok("testing!")
   }
 
@@ -109,9 +147,13 @@ class PipelineController @Inject()(
     * @param graph
     * @param sequence
     */
-  def createSequence(graph: JsValue, sequence: List[String]): Unit = {
+  def createSequence(graph: JsValue, sequence: List[String]): List[Future[String]] = {
     // create tasks
-    sequence.foreach(task => createTask(graph, task))
+    val futures = sequence
+      .filter(task => (graphUtil.getNodesByKeyVal(graph, "id", task).head \ "taskType").as[String] == "action")
+      .map(task => createTask(graph, task))
+    println("futures", futures)
+    futures
   }
 
   /**
@@ -119,9 +161,9 @@ class PipelineController @Inject()(
     * @param graph
     * @param id
     */
-  def createTask(graph: JsValue, id: String): Unit ={
+  def createTask(graph: JsValue, id: String): Future[String] ={
     val util = new GraphUtil
-    print("create task key", id)
+    println("create task key", id)
 
     // It should only return one task node
     val rawTaskSearch = graphUtil.getNodesByKeyVal(graph, "id", id)
