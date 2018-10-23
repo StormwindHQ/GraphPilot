@@ -2,7 +2,8 @@ package controllers
 
 import javax.inject._
 
-import scala.concurrent.Future
+import scala.concurrent.{ Future, Await }
+import scala.concurrent.duration._
 
 import play.api.db._
 import play.api.mvc._
@@ -102,11 +103,11 @@ class PipelineController @Inject()(
     // 1. filter only action tasks
     // 2. create future maps
 
-    val taskFutures = deepFlatPaths.map {
-    }
+    /*
     println(sequenceFutures)
     */
-    // println(paths.map(sequence => createSequence(graph, sequence)))
+    println("checking multiple paths")
+    println(paths.map(sequence => createSequence(graph, sequence)))
     val l = List(1, 6, 8)
 
     val f = l.map{
@@ -150,8 +151,8 @@ class PipelineController @Inject()(
   def createSequence(graph: JsValue, sequence: List[String]): List[Future[String]] = {
     // create tasks
     val futures = sequence
-      .filter(task => (graphUtil.getNodesByKeyVal(graph, "id", task).head \ "taskType").as[String] == "action")
-      .map(task => createTask(graph, task))
+      .filter(task => (graphUtil.getNodesByKeyVal(graph, "id", task).head \ "taskType").as[String] == "actions")
+      .map(task => pipelineCreateTask(graph, task))
     println("futures", futures)
     futures
   }
@@ -161,23 +162,26 @@ class PipelineController @Inject()(
     * @param graph
     * @param id
     */
-  def createTask(graph: JsValue, id: String): Future[String] ={
-    val util = new GraphUtil
-    println("create task key", id)
+  def pipelineCreateTask(graph: JsValue, id: String): Future[String] = {
+    Future {
+      val util = new GraphUtil
+      println("create task key", id)
 
-    // It should only return one task node
-    val rawTaskSearch = graphUtil.getNodesByKeyVal(graph, "id", id)
-    if (rawTaskSearch.length > 1) {
-      throw new MultipleTaskNodeException
+      // It should only return one task node
+      val rawTaskSearch = graphUtil.getNodesByKeyVal(graph, "id", id)
+      if (rawTaskSearch.length > 1) {
+        throw new MultipleTaskNodeException
+      }
+      val task = rawTaskSearch.head
+      val create = faas.createTask(
+        appName=(task \ "taskApp").as[String],
+        taskType=(task \ "taskType").as[String],
+        taskName=(task \ "taskName").as[String],
+        kind=TaskKind.node8,
+        inputs=null
+      )
+      Await.result(create, 3.seconds)
     }
-    val task = rawTaskSearch.head
-    faas.createTask(
-      appName=(task \ "taskApp").as[String],
-      taskType=(task \ "taskType").as[String],
-      taskName=(task \ "taskName").as[String],
-      kind=TaskKind.node8,
-      inputs=null
-    )
   }
 
 }

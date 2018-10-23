@@ -1,14 +1,14 @@
 package services
 import javax.inject._
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
-import scala.concurrent.Future
+import scala.concurrent.{ Future, Await }
 import play.api.libs.ws._
 import play.api.http.HttpEntity
 import play.api.libs.json._
 import services.{ Validation }
 import utils.ConfigUtil
+import scala.concurrent.duration._
 
 /**
   * List of available environment types in the latest OpenWhisk
@@ -117,27 +117,31 @@ class WskService @Inject() (
     inputs: JsValue,
     // env: JsObject
   ): Future[String] = {
-    // Validate the inputs
-    val validator = new Validation()
-    //  validator.validateTaskPayload(
-    //  appName, taskType, taskName, inputs)
-    // Zips the task if it's not zipped already
-    fs.zipTaskIfNotExist(
-      appName, taskType, taskName, true)
-    val encodedAction = fs.getActionAsBase64(appName, taskType, taskName)
-    val body: JsValue = JsObject(Seq(
-      "exec" -> JsObject(Seq(
-        "kind" -> JsString(kind.toString),
-        "code" -> JsString(encodedAction)
+    Future {
+      // Validate the inputs
+      val validator = new Validation()
+      //  validator.validateTaskPayload(
+      //  appName, taskType, taskName, inputs)
+      // Zips the task if it's not zipped already
+      fs.zipTaskIfNotExist(
+        appName, taskType, taskName, true)
+      val encodedAction = fs.getActionAsBase64(appName, taskType, taskName)
+      val body: JsValue = JsObject(Seq(
+        "exec" -> JsObject(Seq(
+          "kind" -> JsString(kind.toString),
+          "code" -> JsString(encodedAction)
+        ))
       ))
-    ))
-    ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
-      .withHttpHeaders("Accept" -> "application/json")
-      .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
-      .put(body)
-      .map { response => response.body }
+
+      val req = ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
+        .withHttpHeaders("Accept" -> "application/json")
+        .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
+        .put(body)
+      Await.result(req, 3.seconds).body
+    }
   }
 
+      "test"
   /**
     * Returns a list of tasks in the current OpenWhisk instance in a string format
     * @return

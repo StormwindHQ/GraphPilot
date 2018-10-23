@@ -34,15 +34,24 @@ class PipelineService {
     edges.filter((x: JsValue) => (x \ "from").as[String] == from && (x \ "to").as[String] == to).head
   }
 
+  /**
+    * Create a sequence of tasks
+    * @param graph
+    * @param sequence
+    */
   def createSequence(graph: JsValue, sequence: List[String]): Unit = {
     // create tasks
     println("creating a sequence for", sequence)
     sequence.foreach(x => createTask(graph, x))
   }
 
+  /**
+    * Creates a single task according to a graph and a node ID
+    * @param graph
+    * @param id
+    */
   def createTask(graph: JsValue, id: String): Unit ={
     val util = new GraphUtil
-    print("create task key", id)
     val taskNode = util.getNodesByKeyVal(graph, "id", id)
 
     println("Found a task node", taskNode)

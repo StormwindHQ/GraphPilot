@@ -43,6 +43,7 @@ class TaskController @Inject()(
     * Creates a Task
     * @return status
     */
+
   def createTask = Action.async { implicit request =>
     val inputs: JsValue = JsObject(Seq(
       "title" -> JsString("Hello world!"),
@@ -61,7 +62,7 @@ class TaskController @Inject()(
       taskName="list_webhooks",
       kind=TaskKind.node6,
       inputs=inputs
-    ).map { response => Ok(response) }
+    ).map { body => Ok(body) }
   }
 
 }
