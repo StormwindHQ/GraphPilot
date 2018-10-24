@@ -58,7 +58,7 @@ class PipelineController @Inject()(
        "nodes": [
          { "id": "task_1", "guid": "trigger_12938x12938", "taskApp": "github", "taskType": "triggers", "taskName": "on_wiki_update", "chart": { "x": 12, "y": 39 } },
          { "id": "task_2", "guid": "action_12983xcv", "taskApp": "github", "taskType": "actions", "taskName": "create_issue", "chart": { "x": 55, "y": 203 } },
-         { "id": "task_3", "guid": "action_3432aa", "taskApp": "conditions", "taskType": "conditions", "taskName": "wait", "chart": { "x": 232, "y": 111 } },
+         { "id": "task_3", "guid": "action_3432aa", "taskApp": "conditions", "taskType": "actions", "taskName": "wait", "chart": { "x": 232, "y": 111 } },
          { "id": "task_4", "guid": "action_634643asd1", "taskApp": "github", "taskType": "actions", "taskName": "render_markdown", "chart": { "x": 312, "y": 11 } } ],
        "edges": [
          {
@@ -105,7 +105,6 @@ class PipelineController @Inject()(
     /*
     println(sequenceFutures)
     */
-    println("checking multiple paths")
     val sequences = paths.map(sequence => createSequence(graph, sequence))
     println("sequences", sequences)
     /* sequences.map(seq => {

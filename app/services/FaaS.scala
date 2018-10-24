@@ -132,7 +132,6 @@ class WskService @Inject() (
       // Zips the task if it's not zipped already
       fs.zipTaskIfNotExist(
         appName, taskType, taskName, true)
-      println("finished zipping a task!")
       val encodedAction = fs.getActionAsBase64(appName, taskType, taskName)
       JsObject(Seq(
         "exec" -> JsObject(Seq(
@@ -141,16 +140,17 @@ class WskService @Inject() (
         ))
       ))
     }
-    println("checking post body", constructPostBody)
     // Posting a request using the constructed body and retrieves the task name only
     def futureRequest(body: JsValue): Future[String] = {
-      ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
+      ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/${appName}-${taskType}-${taskName}")
       .withHttpHeaders("Accept" -> "application/json")
       .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
       .put(body)
       .map(rawResult => {
         val jsonBody:JsValue = Json.parse(rawResult.body)
-        (jsonBody \ "name").as[String]
+        val bodyResult = (jsonBody \ "name").as[String]
+        println("bodyresult!", bodyResult)
+        bodyResult
       })
     }
     constructPostBody.flatMap(body => futureRequest(body))

@@ -78,7 +78,6 @@ class FileSystem () {
       val zipUtil = new ZipArchiveUtil
       val jDir = dir.toJava
       val filePaths = zipUtil.createFileList(jDir, zipPath)
-      println("file paths", filePaths)
       zipUtil.createZip(filePaths, zipPath, dirPath)
       // dir.zipTo(zipFile.path) // bug reported https://github.com/pathikrit/better-files/issues/268
     }
@@ -132,7 +131,6 @@ class FileSystem () {
   */
 class ZipArchiveUtil {
   def createFileList(file: JFile, outputFilename: String): List[String] = {
-    println("checking file", file)
     file match {
       case file if file.isFile => {
         if (file.getName != outputFilename)
