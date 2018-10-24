@@ -3,6 +3,7 @@ import javax.inject._
 import scala.concurrent.ExecutionContext
 
 import scala.concurrent.{ Future, Await }
+import scala.util.{ Success, Failure }
 import play.api.libs.ws._
 import play.api.http.HttpEntity
 import play.api.libs.json._
@@ -107,7 +108,7 @@ class WskService @Inject() (
     * @param taskType
     * @param taskName
     * @param kind
-    * @return
+    * @return - Task ID in String
     */
   override def createTask(
     appName: String,
@@ -117,31 +118,36 @@ class WskService @Inject() (
     inputs: JsValue,
     // env: JsObject
   ): Future[String] = {
-    Future {
+    // Constructing a body object for the WS post
+    def constructPostBody: Future[JsValue] = Future {
       // Validate the inputs
       val validator = new Validation()
-      //  validator.validateTaskPayload(
-      //  appName, taskType, taskName, inputs)
       // Zips the task if it's not zipped already
       fs.zipTaskIfNotExist(
         appName, taskType, taskName, true)
       val encodedAction = fs.getActionAsBase64(appName, taskType, taskName)
-      val body: JsValue = JsObject(Seq(
+      JsObject(Seq(
         "exec" -> JsObject(Seq(
           "kind" -> JsString(kind.toString),
           "code" -> JsString(encodedAction)
         ))
       ))
-
-      val req = ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
-        .withHttpHeaders("Accept" -> "application/json")
-        .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
-        .put(body)
-      Await.result(req, 3.seconds).body
     }
+
+    // Posting a request using the constructed body and retrieves the task name only
+    def futureRequest(body: JsValue): Future[String] = {
+      ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
+      .withHttpHeaders("Accept" -> "application/json")
+      .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
+      .put(body)
+      .map(rawResult => {
+        val jsonBody:JsValue = Json.parse(rawResult.body)
+        (jsonBody \ "name").as[String]
+      })
+    }
+    constructPostBody.flatMap(body => futureRequest(body))
   }
 
-      "test"
   /**
     * Returns a list of tasks in the current OpenWhisk instance in a string format
     * @return

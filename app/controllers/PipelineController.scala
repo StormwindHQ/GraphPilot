@@ -15,7 +15,7 @@ import play.api.data.Forms.{ date, longNumber, mapping, nonEmptyText, optional, 
 import play.filters.csrf._
 import play.filters.csrf.CSRF.Token
 import play.api.libs.json._
-import services.{ WskService, TaskKind, PipelineService }
+import services.{ WskService, TaskKind }
 import utils.{ GraphUtil }
 import consts.{ MultipleTaskNodeException }
 
@@ -33,7 +33,6 @@ class PipelineController @Inject()(
   faas: WskService, // TODO: How do we inject dependency according to the settings? e.g. faas=aws should inject AwsService
   ws: WSClient,
   graphUtil: GraphUtil,
-  ps: PipelineService,
 )(implicit assetsFinder: AssetsFinder) extends MessagesAbstractController(cc) {
 
   val pipelineForm = Form(
@@ -108,78 +107,52 @@ class PipelineController @Inject()(
     */
     println("checking multiple paths")
     println(paths.map(sequence => createSequence(graph, sequence)))
-    val l = List(1, 6, 8)
-
-    val f = l.map{
-      i => Future {
-        println("future " +i)
-        Thread.sleep(i* 1000)
-        if (i == 12)
-          throw new Exception("6 is not legal.")
-        i
-      }
-    }
-
-    val f1 = Future.sequence(f)
-
-    f1 onSuccess{
-      case l => {
-        println("onSuccess")
-        l.foreach(i => {
-
-          println("h : " + i)
-
-        })
-      }
-    }
-
-    f1 onFailure {
-      case l => {
-        println("onFailure")
-      }
-    }
-    Ok("testing!")
+    Ok("test")
   }
 
   // Useful methods
 
   /**
-    * Creating sequence factory method
+    * Creates a list of Future sequences that looks like
+    * List(Future(<not completed>), Future(<not completed>)
     * @param graph
     * @param sequence
     */
   def createSequence(graph: JsValue, sequence: List[String]): List[Future[String]] = {
-    // create tasks
-    val futures = sequence
-      .filter(task => (graphUtil.getNodesByKeyVal(graph, "id", task).head \ "taskType").as[String] == "actions")
-      .map(task => pipelineCreateTask(graph, task))
-    println("futures", futures)
-    futures
+    // Creating the futures for OpenWhisk tasks
+    val taskFutures = sequence
+      .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
+      .map((taskId: String) => pipelineCreateTask(graph, taskId))
+    // Create a OpenWhisk sequence using the IDs
+    taskFutures
   }
 
   /**
-    * Create task factory method
+    * Creating a future to create an OpenWhisk task. It expects a static graph and an ID of a task
+    * to find the detail about the node from the graph.
     * @param graph
     * @param id
     */
   def pipelineCreateTask(graph: JsValue, id: String): Future[String] = {
-    Future {
+    Future[String] {
       val util = new GraphUtil
-      println("create task key", id)
 
       // It should only return one task node
       val rawTaskSearch = graphUtil.getNodesByKeyVal(graph, "id", id)
       if (rawTaskSearch.length > 1) {
         throw new MultipleTaskNodeException
       }
-      val task = rawTaskSearch.head
-      val create = faas.createTask(
+      val task: JsValue = rawTaskSearch.head
+      val create: Future[String] = faas.createTask(
         appName=(task \ "taskApp").as[String],
         taskType=(task \ "taskType").as[String],
         taskName=(task \ "taskName").as[String],
         kind=TaskKind.node8,
         inputs=null
       )
+      // create.flatMap(res => res)
+      // create.map(x => x)
+      // 3 seconds wait for the create future to finish
       Await.result(create, 3.seconds)
     }
   }

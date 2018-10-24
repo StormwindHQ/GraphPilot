@@ -43,7 +43,6 @@ class TaskController @Inject()(
     * Creates a Task
     * @return status
     */
-
   def createTask = Action.async { implicit request =>
     val inputs: JsValue = JsObject(Seq(
       "title" -> JsString("Hello world!"),
