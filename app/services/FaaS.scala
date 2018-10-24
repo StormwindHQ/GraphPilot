@@ -102,8 +102,16 @@ class WskService @Inject() (
     * Create an action using the OpenWhisk REST API.
     * It base64 encodes the zip file of an action and
     * post it to OpenWhisk using PUT method to create the action.
-    * Note that the function is called createTask but it's technically
-    * creating an Action from OpenWhisk's end
+    *
+    * @example
+    * createTask(
+    *   appName="github",
+    *   taskType="actions",
+    *   taskName="create_issue",
+    *   kind=TaskKind.node6,
+    *   inputs=<someInputs>
+    * ).map(taskId => println("successfully created a task with an ID:", taskId))
+    *
     * @param appName
     * @param taskType
     * @param taskName
