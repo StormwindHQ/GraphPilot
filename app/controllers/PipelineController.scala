@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject._
 
-import scala.concurrent.{ Future, Await }
+import scala.concurrent.{ ExecutionContext, Future, Await }
 import scala.concurrent.duration._
 
 import play.api.db._
@@ -51,7 +51,7 @@ class PipelineController @Inject()(
     * Add a pipeline
     * @return
     */
-  def createPipeline = Action { implicit request =>
+  def createPipeline = Action.async { implicit request =>
 
     val graph: JsValue = Json.parse("""
       {
@@ -110,7 +110,9 @@ class PipelineController @Inject()(
     /* sequences.map(seq => {
       Future.sequence(seq)
     }) */
-    Ok("test")
+    val sequenceFutures = Future.sequence(sequences)
+    sequenceFutures.map(result =>
+      Ok("test" + result mkString "/"))
   }
 
   // Useful methods
@@ -121,17 +123,12 @@ class PipelineController @Inject()(
     * @param graph
     * @param sequence
     */
-  def createSequence(graph: JsValue, sequence: List[String]): Future[List[String]] = {
+  def createSequence(graph: JsValue, sequence: List[String]): Future[String] = {
     val taskFutures = sequence
       .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
       .map((taskId: String) => pipelineCreateTask(graph, taskId))
 
-    def createSequence(taskIds: List[String]) = Future {
-      println("checking taskIds", taskIds)
-      taskIds
-    }
-
-    Future.sequence(taskFutures).flatMap(taskIds => createSequence(taskIds))
+    Future.sequence(taskFutures).flatMap(taskIds => faas.createSequence(taskIds))
   }
 
   /**

@@ -53,6 +53,8 @@ trait FaaS {
     inputs: JsValue
   ): Future[String]
 
+  def createSequence(taskIds: List[String]): Future[String]
+
   /**
     * Returns a list of tasks
     * @return
@@ -148,12 +150,41 @@ class WskService @Inject() (
       .put(body)
       .map(rawResult => {
         val jsonBody:JsValue = Json.parse(rawResult.body)
-        val bodyResult = (jsonBody \ "name").as[String]
-        println("bodyresult!", bodyResult)
-        bodyResult
+        // Fails here too!
+        (jsonBody \ "name").as[String]
       })
     }
     constructPostBody.flatMap(body => futureRequest(body))
+  }
+
+  /**
+    *
+    * @param taskIds
+    * @return
+    */
+  override def createSequence(taskIds: List[String]): Future[String] = {
+    println("before creating a sequence", taskIds)
+    def constructBody: Future[JsValue] = Future {
+      JsObject(Seq(
+        "exec" -> JsObject(Seq(
+          "kind" -> JsString("sequence"),
+          "components" -> Json.toJson(taskIds)
+        ))
+      ))
+    }
+    def futureRequest(body: JsValue): Future[String] = {
+      ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/sequenceAction")
+        .withHttpHeaders("Accept" -> "application/json")
+        .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
+        .put(body)
+        .map(rawResult => {
+          val jsonBody:JsValue = Json.parse(rawResult.body)
+          println("checking jsonbody sequence create", jsonBody)
+          // Fails here!
+          (jsonBody \ "name").as[String]
+        })
+    }
+    constructBody.flatMap(body => futureRequest(body))
   }
 
   /**
