@@ -67,7 +67,7 @@ class FileSystem () {
   ): Boolean = {
     val pwd = System.getProperty("user.dir")
     val dirPath = s"${pwd}/tasks/${appName}/${taskType}/${taskName}"
-    val zipPath = s"/home/jason/tmp/${taskName}.zip"
+    val zipPath = s"${dirPath}/${taskName}.zip"
     val dir = File(dirPath)
     val zipFile = File(zipPath)
     if (force && zipFile.exists()) {
@@ -78,6 +78,7 @@ class FileSystem () {
       val zipUtil = new ZipArchiveUtil
       val jDir = dir.toJava
       val filePaths = zipUtil.createFileList(jDir, zipPath)
+      println("file paths", filePaths)
       zipUtil.createZip(filePaths, zipPath, dirPath)
       // dir.zipTo(zipFile.path) // bug reported https://github.com/pathikrit/better-files/issues/268
     }

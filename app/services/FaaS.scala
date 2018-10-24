@@ -132,6 +132,7 @@ class WskService @Inject() (
       // Zips the task if it's not zipped already
       fs.zipTaskIfNotExist(
         appName, taskType, taskName, true)
+      println("finished zipping a task!")
       val encodedAction = fs.getActionAsBase64(appName, taskType, taskName)
       JsObject(Seq(
         "exec" -> JsObject(Seq(
