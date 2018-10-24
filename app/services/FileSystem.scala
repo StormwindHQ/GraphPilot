@@ -131,7 +131,7 @@ class FileSystem () {
   */
 class ZipArchiveUtil {
   def createFileList(file: JFile, outputFilename: String): List[String] = {
-    print("checking file", file)
+    println("checking file", file)
     file match {
       case file if file.isFile => {
         if (file.getName != outputFilename)

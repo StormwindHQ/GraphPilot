@@ -7,7 +7,6 @@ import scala.util.{ Success, Failure }
 import play.api.libs.ws._
 import play.api.http.HttpEntity
 import play.api.libs.json._
-import services.{ Validation }
 import utils.ConfigUtil
 import scala.concurrent.duration._
 
@@ -141,7 +140,7 @@ class WskService @Inject() (
         ))
       ))
     }
-
+    println("checking post body", constructPostBody)
     // Posting a request using the constructed body and retrieves the task name only
     def futureRequest(body: JsValue): Future[String] = {
       ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/hello")
@@ -158,6 +157,11 @@ class WskService @Inject() (
 
   /**
     * Returns a list of tasks in the current OpenWhisk instance in a string format
+    *
+    * @example
+    * listTasks().flatMap(response => println(response))
+    * // list of tasks in String JSON format
+    *
     * @return
     */
   override def listTasks(): Future[String] = {

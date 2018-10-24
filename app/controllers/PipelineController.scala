@@ -106,7 +106,11 @@ class PipelineController @Inject()(
     println(sequenceFutures)
     */
     println("checking multiple paths")
-    println(paths.map(sequence => createSequence(graph, sequence)))
+    val sequences = paths.map(sequence => createSequence(graph, sequence))
+    println("sequences", sequences)
+    /* sequences.map(seq => {
+      Future.sequence(seq)
+    }) */
     Ok("test")
   }
 
@@ -118,13 +122,17 @@ class PipelineController @Inject()(
     * @param graph
     * @param sequence
     */
-  def createSequence(graph: JsValue, sequence: List[String]): List[Future[String]] = {
-    // Creating the futures for OpenWhisk tasks
+  def createSequence(graph: JsValue, sequence: List[String]): Future[List[String]] = {
     val taskFutures = sequence
       .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
       .map((taskId: String) => pipelineCreateTask(graph, taskId))
-    // Create a OpenWhisk sequence using the IDs
-    taskFutures
+
+    def createSequence(taskIds: List[String]) = Future {
+      println("checking taskIds", taskIds)
+      taskIds
+    }
+
+    Future.sequence(taskFutures).flatMap(taskIds => createSequence(taskIds))
   }
 
   /**
@@ -134,27 +142,29 @@ class PipelineController @Inject()(
     * @param id
     */
   def pipelineCreateTask(graph: JsValue, id: String): Future[String] = {
-    Future[String] {
-      val util = new GraphUtil
 
-      // It should only return one task node
+    // Find the first task according to the taskId and the static graph
+    def findTask: Future[JsValue] = Future {
+      val util = new GraphUtil
       val rawTaskSearch = graphUtil.getNodesByKeyVal(graph, "id", id)
       if (rawTaskSearch.length > 1) {
         throw new MultipleTaskNodeException
       }
-      val task: JsValue = rawTaskSearch.head
-      val create: Future[String] = faas.createTask(
+      rawTaskSearch.head
+    }
+
+    // Create the task accordingly
+    def createTask(task: JsValue): Future[String] = {
+      faas.createTask(
         appName=(task \ "taskApp").as[String],
         taskType=(task \ "taskType").as[String],
         taskName=(task \ "taskName").as[String],
         kind=TaskKind.node8,
         inputs=null
       )
-      // create.flatMap(res => res)
-      // create.map(x => x)
-      // 3 seconds wait for the create future to finish
-      Await.result(create, 3.seconds)
     }
+
+    findTask.flatMap(task => createTask(task))
   }
 
 }
