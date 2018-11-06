@@ -18,7 +18,7 @@ import play.api.libs.ws._
 import consts.{ MultipleTaskNodeException }
 import services.{ WskService, TaskKind }
 import utils.{ GraphUtil }
-import scala.util.{ Success, Failure }
+import scala.collection.mutable.ListBuffer
 
 /**
   * This controller creates an `Action` to handle HTTP requests to the
@@ -102,8 +102,8 @@ class PipelineController @Inject()(
     val sequences = paths.map(sequence => createSequence(graph, sequence))
     println("sequences", sequences)
     for (eachFuture <- sequences) {
-      Await.ready(eachFuture, Duration.Inf)
-      println("checking future", eachFuture)
+      val seqResult = Await.result(eachFuture, Duration.Inf)
+      println("checking future", seqResult)
     }
     val sequenceFutures = Future.sequence(sequences)
     sequenceFutures.map(result =>
@@ -118,7 +118,7 @@ class PipelineController @Inject()(
     * @param graph
     * @param sequence
     */
-  def createSequence(graph: JsValue, sequence: List[String]): Future[String] = Future {
+  def createSequence(graph: JsValue, sequence: List[String]): Future[List[String]] = Future {
     /*def futureCreateTasks: Future[List[String]] = Future {
       val futureInputs = sequence
         .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
@@ -132,10 +132,14 @@ class PipelineController @Inject()(
     println("future inputs ", futureInputs)*/
     val tasks = sequence
       .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
+    var taskIds = new ListBuffer[String]()
     for (taskId <- tasks) {
-      Await.ready(pipelineCreateTask(graph, taskId), Duration.Inf)
+      val createTaskResult = Await.result(pipelineCreateTask(graph, taskId), Duration.Inf)
+      createTaskResult match {
+        case x: String => taskIds = taskIds += x
+      }
     }
-    "test"
+    taskIds.toList
   }
 
   /**
