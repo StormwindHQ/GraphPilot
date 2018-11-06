@@ -38,6 +38,7 @@ trait FaaS {
 
   /**
     * Creates a task according to the below arguments
+    * @param id
     * @param appName
     * @param taskType
     * @param taskName
@@ -46,6 +47,7 @@ trait FaaS {
     * @return
     */
   def createTask(
+    id: String,
     appName: String,
     taskType: String,
     taskName: String,
@@ -105,6 +107,7 @@ class WskService @Inject() (
     *
     * @example
     * createTask(
+    *   id="test-1-",
     *   appName="github",
     *   taskType="actions",
     *   taskName="create_issue",
@@ -119,6 +122,7 @@ class WskService @Inject() (
     * @return - Task ID in String
     */
   override def createTask(
+    id: String,
     appName: String,
     taskType: String,
     taskName: String,
@@ -143,14 +147,21 @@ class WskService @Inject() (
     }
     // Posting a request using the constructed body and retrieves the task name only
     def futureRequest(body: JsValue): Future[String] = {
-      ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/${appName}-${taskType}-${taskName}")
+      println("before requesting", appName, taskType, taskName, (body \ "exec" \ "kind"))
+
+      ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/${id}-${appName}-${taskType}-${taskName}")
       .withHttpHeaders("Accept" -> "application/json")
       .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
       .put(body)
       .map(rawResult => {
         val jsonBody:JsValue = Json.parse(rawResult.body)
         // Fails here too!
-        (jsonBody \ "name").as[String]
+        try {
+          (jsonBody \ "name").as[String]
+        } catch {
+          case ex: JsResultException => throw ex
+        }
+
       })
     }
     constructPostBody.flatMap(body => futureRequest(body))

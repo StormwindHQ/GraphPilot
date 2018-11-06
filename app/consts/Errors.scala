@@ -48,3 +48,11 @@ final case class FieldEnumException(
 final case class MultipleTaskNodeException(
   private val cause: Throwable = None.orNull)
   extends Exception("Finding task by task id should return only 1 result")
+
+/**
+  * Exception thrown when creating a pipeline
+  * @param cause
+  */
+final case class PipelineCreationException(
+  private val cause: Throwable = None.orNull)
+  extends Exception("Error while creating a pipeline")

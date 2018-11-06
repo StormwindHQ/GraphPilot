@@ -56,6 +56,7 @@ class TaskController @Inject()(
       ))
     ))
     wsk.createTask(
+      id="general",
       appName="github",
       taskType="triggers",
       taskName="list_webhooks",

@@ -1,6 +1,7 @@
 package controllers
 
 import javax.inject._
+import java.util.{ NoSuchElementException }
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -15,7 +16,7 @@ import play.filters.csrf.CSRF.Token
 import play.api.libs.json._
 import models.Pipeline
 import play.api.libs.ws._
-import consts.{ MultipleTaskNodeException }
+import consts.{ MultipleTaskNodeException, PipelineCreationException }
 import services.{ WskService, TaskKind }
 import utils.{ GraphUtil }
 import scala.collection.mutable.ListBuffer
@@ -90,6 +91,7 @@ class PipelineController @Inject()(
        ]
       }
     """)
+    val pipelineName = "pipe1"
     val triggerNodes = (graph \ "nodes").as[List[JsValue]].filter(x => (x \ "taskType").as[String] == "triggers")
     // Get all the paths according to the trigger nodes
     val paths = triggerNodes
@@ -98,16 +100,22 @@ class PipelineController @Inject()(
     // val deepFlatPaths = paths.flatten
     // 1. filter only action tasks
     // 2. create future maps
+    println("paths", paths)
 
-    val sequences = paths.map(sequence => createSequence(graph, sequence))
-    println("sequences", sequences)
+    val sequences = paths.zipWithIndex.map {
+      case (sequence, index) => {
+        val pipelineId = s"${pipelineName}-${index}"
+        createSequence(graph, pipelineId, sequence)
+      }
+    }
+    // val sequences = paths.map(sequence => createSequence(graph, sequence))
     for (eachFuture <- sequences) {
       val seqResult = Await.result(eachFuture, Duration.Inf)
       println("checking future", seqResult)
     }
-    val sequenceFutures = Future.sequence(sequences)
-    sequenceFutures.map(result =>
-      Ok("test" + result mkString "/"))
+    Future {
+      Ok("test")
+    }
   }
 
   // Useful methods
@@ -116,27 +124,19 @@ class PipelineController @Inject()(
     * Creates a list of Future sequences that looks like
     * List(Future(<not completed>), Future(<not completed>)
     * @param graph
+    * @param pipelineId
     * @param sequence
     */
-  def createSequence(graph: JsValue, sequence: List[String]): Future[List[String]] = Future {
-    /*def futureCreateTasks: Future[List[String]] = Future {
-      val futureInputs = sequence
-        .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
-        .map((taskId: String) => (graph, taskId))
-      // pipelineCreateTask
-      // Future.traverse(futureInputs)(args => pipelineCreateTask(args._1, args._2)).map(x => x)
-    }*/
-    /*val futureInputs = sequence
-      .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
-      .map((taskId: String) => (graph, taskId))
-    println("future inputs ", futureInputs)*/
+  def createSequence(graph: JsValue, pipelineId: String, sequence: List[String]): Future[List[String]] = Future {
     val tasks = sequence
       .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
     var taskIds = new ListBuffer[String]()
+    println("checking tasks", tasks)
     for (taskId <- tasks) {
-      val createTaskResult = Await.result(pipelineCreateTask(graph, taskId), Duration.Inf)
+      val createTaskResult = Await.result(pipelineCreateTask(graph, pipelineId, taskId), Duration.Inf)
       createTaskResult match {
         case x: String => taskIds = taskIds += x
+        case _ => throw new PipelineCreationException
       }
     }
     taskIds.toList
@@ -148,12 +148,12 @@ class PipelineController @Inject()(
     * @param graph
     * @param id
     */
-  def pipelineCreateTask(graph: JsValue, id: String): Future[String] = {
+  def pipelineCreateTask(graph: JsValue, pipelineId: String, taskId: String): Future[String] = {
 
     // Find the first task according to the taskId and the static graph
     def findTask: Future[JsValue] = Future {
       val util = new GraphUtil
-      val rawTaskSearch = graphUtil.getNodesByKeyVal(graph, "id", id)
+      val rawTaskSearch = graphUtil.getNodesByKeyVal(graph, "id", taskId)
       if (rawTaskSearch.length > 1) {
         throw new MultipleTaskNodeException
       }
@@ -163,6 +163,7 @@ class PipelineController @Inject()(
     // Create the task accordingly
     def createTask(task: JsValue): Future[String] = {
       faas.createTask(
+        id=pipelineId,
         appName=(task \ "taskApp").as[String],
         taskType=(task \ "taskType").as[String],
         taskName=(task \ "taskName").as[String],
