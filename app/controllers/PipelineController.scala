@@ -99,12 +99,9 @@ class PipelineController @Inject()(
     val paths = triggerNodes
       .map(x => graphUtil.getAllPaths(graph, (x \ "id").as[String]))
       .flatten
-    // val deepFlatPaths = paths.flatten
-    // 1. filter only action tasks
-    // 2. create future maps
-    println("paths", paths)
 
-    val sequences = paths.zipWithIndex.map {
+    // Retrieves sequence IDs zipped with loop index values
+    val listFutureCreateSequence = paths.zipWithIndex.map {
       case (sequence, index) => {
         // Constructing pipeline ID
         val seqId = s"seq${index}"
@@ -112,9 +109,10 @@ class PipelineController @Inject()(
         createSequence(graph, pipelineId, sequence)
       }
     }
-    // val sequences = paths.map(sequence => createSequence(graph, sequence))
-    for (eachFuture <- sequences) {
-      val seqResult = Await.result(eachFuture, Duration.Inf)
+
+    // Awaits each sequence creation future
+    for (futureCreateSequence <- listFutureCreateSequence) {
+      val seqResult = Await.result(futureCreateSequence, Duration.Inf)
       println("checking future", seqResult)
     }
     Future {
@@ -126,17 +124,24 @@ class PipelineController @Inject()(
 
   /**
     * Creates a list of Future sequences that looks like
-    * List(Future(<not completed>), Future(<not completed>)
-    * @param graph
-    * @param pipelineId
-    * @param sequence
+    *
+    * @example
+    * createSequence(graph, "pipe1-seq0", List("task1", "task2", "task3"))
+    * // Future(List("pipe1-seq0-github-actions-render_markdown", "pipe1-seq0-conditions-actions-wait", "pipe1-seq0-github-actions-create_issue"))
+    *
+    * @param graph - Graph data
+    * @param pipelineId - Unique ID for the pipeline
+    * @param sequence - List of task IDs of the sequence
     */
   def createSequence(graph: JsValue, pipelineId: String, sequence: List[String]): Future[List[String]] = Future {
-    val tasks = sequence
+
+    // List of action task IDs
+    val actionTasks = sequence
       .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
+
+    // Task IDs received after creating the task via REST API
     var taskIds = new ListBuffer[String]()
-    println("checking tasks", tasks)
-    for (taskId <- tasks) {
+    for (taskId <- actionTasks) {
       val createTaskResult = Await.result(pipelineCreateTask(graph, pipelineId, taskId), Duration.Inf)
       createTaskResult match {
         case x: String => taskIds = taskIds += x
@@ -147,8 +152,12 @@ class PipelineController @Inject()(
   }
 
   /**
-    * Creating a future to create an OpenWhisk task. It expects a static graph and an ID of a task
-    * to find the detail about the node from the graph.
+    * Creating a future to create an OpenWhisk task. It expects a static graph, unique pipeline ID, and an ID of the task
+    *
+    * @example
+    * pipelineCreateTask(graph, "pipe1-seq0", "task1")
+    * // pipe1-seq0-github-actions-render_markdown
+    *
     * @param graph
     * @param id
     */
