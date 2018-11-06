@@ -50,7 +50,7 @@ class PipelineController @Inject()(
     * @return
     */
   def createPipeline = Action.async { implicit request =>
-
+    // DUMMY DATA STARTS
     val graph: JsValue = Json.parse("""
       {
        "nodes": [
@@ -92,6 +92,8 @@ class PipelineController @Inject()(
       }
     """)
     val pipelineName = "pipe1"
+    // DUMMY DATA ENDS
+
     val triggerNodes = (graph \ "nodes").as[List[JsValue]].filter(x => (x \ "taskType").as[String] == "triggers")
     // Get all the paths according to the trigger nodes
     val paths = triggerNodes
@@ -104,7 +106,9 @@ class PipelineController @Inject()(
 
     val sequences = paths.zipWithIndex.map {
       case (sequence, index) => {
-        val pipelineId = s"${pipelineName}-${index}"
+        // Constructing pipeline ID
+        val seqId = s"seq${index}"
+        val pipelineId = s"${pipelineName}-${seqId}"
         createSequence(graph, pipelineId, sequence)
       }
     }
