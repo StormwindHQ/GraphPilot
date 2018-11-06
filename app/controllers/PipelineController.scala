@@ -2,26 +2,23 @@ package controllers
 
 import javax.inject._
 
-import scala.concurrent.{ ExecutionContext, Future, Await }
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
-
 import play.api.db._
 import play.api.mvc._
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.libs.concurrent.Execution.Implicits._
-
 import play.api.data.Form
-import play.api.data.Forms.{ date, longNumber, mapping, nonEmptyText, optional, text }
+import play.api.data.Forms.{date, longNumber, mapping, nonEmptyText, optional, text}
 import play.filters.csrf._
 import play.filters.csrf.CSRF.Token
 import play.api.libs.json._
+import models.Pipeline
+import play.api.libs.ws._
+import consts.{ MultipleTaskNodeException }
 import services.{ WskService, TaskKind }
 import utils.{ GraphUtil }
-import consts.{ MultipleTaskNodeException }
-
-import models.Pipeline
-
-import play.api.libs.ws._
+import scala.util.{ Success, Failure }
 
 /**
   * This controller creates an `Action` to handle HTTP requests to the
@@ -93,23 +90,21 @@ class PipelineController @Inject()(
        ]
       }
     """)
-
     val triggerNodes = (graph \ "nodes").as[List[JsValue]].filter(x => (x \ "taskType").as[String] == "triggers")
+    // Get all the paths according to the trigger nodes
     val paths = triggerNodes
       .map(x => graphUtil.getAllPaths(graph, (x \ "id").as[String]))
       .flatten
-    val deepFlatPaths = paths.flatten
+    // val deepFlatPaths = paths.flatten
     // 1. filter only action tasks
     // 2. create future maps
 
-    /*
-    println(sequenceFutures)
-    */
     val sequences = paths.map(sequence => createSequence(graph, sequence))
     println("sequences", sequences)
-    /* sequences.map(seq => {
-      Future.sequence(seq)
-    }) */
+    for (eachFuture <- sequences) {
+      Await.ready(eachFuture, Duration.Inf)
+      println("checking future", eachFuture)
+    }
     val sequenceFutures = Future.sequence(sequences)
     sequenceFutures.map(result =>
       Ok("test" + result mkString "/"))
@@ -123,12 +118,24 @@ class PipelineController @Inject()(
     * @param graph
     * @param sequence
     */
-  def createSequence(graph: JsValue, sequence: List[String]): Future[String] = {
-    val taskFutures = sequence
+  def createSequence(graph: JsValue, sequence: List[String]): Future[String] = Future {
+    /*def futureCreateTasks: Future[List[String]] = Future {
+      val futureInputs = sequence
+        .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
+        .map((taskId: String) => (graph, taskId))
+      // pipelineCreateTask
+      // Future.traverse(futureInputs)(args => pipelineCreateTask(args._1, args._2)).map(x => x)
+    }*/
+    /*val futureInputs = sequence
       .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
-      .map((taskId: String) => pipelineCreateTask(graph, taskId))
-
-    Future.sequence(taskFutures).flatMap(taskIds => faas.createSequence(taskIds))
+      .map((taskId: String) => (graph, taskId))
+    println("future inputs ", futureInputs)*/
+    val tasks = sequence
+      .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
+    for (taskId <- tasks) {
+      Await.ready(pipelineCreateTask(graph, taskId), Duration.Inf)
+    }
+    "test"
   }
 
   /**

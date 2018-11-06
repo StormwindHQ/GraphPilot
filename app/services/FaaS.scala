@@ -92,7 +92,6 @@ class WskService @Inject() (
     */
   override def listNamespaces(): Future[String] = {
     // TODO: String interpolation + abstracted value
-
     ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces")
       .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
       .get()
@@ -163,7 +162,6 @@ class WskService @Inject() (
     * @return
     */
   override def createSequence(taskIds: List[String]): Future[String] = {
-    println("before creating a sequence", taskIds)
     def constructBody: Future[JsValue] = Future {
       JsObject(Seq(
         "exec" -> JsObject(Seq(
