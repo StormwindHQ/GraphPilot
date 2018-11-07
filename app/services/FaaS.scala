@@ -55,7 +55,13 @@ trait FaaS {
     inputs: JsValue
   ): Future[String]
 
-  def createSequence(taskIds: List[String]): Future[String]
+  /**
+    * Create an OpenWhisk sequence
+    * @param seqId - An unique ID for the sequence
+    * @param taskIds - A list of task IDs
+    * @return
+    */
+  def createSequence(seqId: String, taskIds: List[String]): Future[String]
 
   /**
     * Returns a list of tasks
@@ -170,27 +176,30 @@ class WskService @Inject() (
 
   /**
     *
-    * @param taskIds
+    * @param seqId - An unique ID for the sequence
+    * @param taskIds - A list of task IDs
     * @return
     */
-  override def createSequence(taskIds: List[String]): Future[String] = {
+  override def createSequence(seqId: String, taskIds: List[String]): Future[String] = {
     def constructBody: Future[JsValue] = Future {
+      // Adding namespace to each task ID
+      val namespacedTaskIds = taskIds.map(id => s"/guest/${id}")
       JsObject(Seq(
         "exec" -> JsObject(Seq(
           "kind" -> JsString("sequence"),
-          "components" -> Json.toJson(taskIds)
+          "components" -> Json.toJson(namespacedTaskIds)
         ))
       ))
     }
     def futureRequest(body: JsValue): Future[String] = {
       // TODO: Abstract api, v1, guest, actions, sequenceAction
-      ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/sequenceAction")
+      ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/${seqId}")
         .withHttpHeaders("Accept" -> "application/json")
         .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
         .put(body)
         .map(rawResult => {
           val jsonBody:JsValue = Json.parse(rawResult.body)
-          println("checking jsonbody sequence create", jsonBody)
+          println("checking jsonbody sequence create", taskIds, body, jsonBody, seqId)
           // Fails here!
           (jsonBody \ "name").as[String]
         })

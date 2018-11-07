@@ -131,14 +131,14 @@ class PipelineController @Inject()(
     * @param pipelineId - Unique ID for the pipeline
     * @param sequence - List of task IDs of the sequence
     */
-  def pipelineCreateSequence(graph: JsValue, pipelineId: String, sequence: List[String]): Future[List[String]] = Future {
-
+  def pipelineCreateSequence(graph: JsValue, pipelineId: String, sequence: List[String]): Future[String] = {
     // List of action task IDs
     val actionTasks = sequence
       .filter((taskId: String) => (graphUtil.getNodesByKeyVal(graph, "id", taskId).head \ "taskType").as[String] == "actions")
 
     // Task IDs received after creating the task via REST API
-    var taskIds = new ListBuffer[String]()
+    // TODO: refactor to map and .sequence
+    /*var taskIds = new ListBuffer[String]()
     for (taskId <- actionTasks) {
       val createTaskResult = Await.result(pipelineCreateTask(graph, pipelineId, taskId), Duration.Inf)
       createTaskResult match {
@@ -146,8 +146,11 @@ class PipelineController @Inject()(
         // TODO: It should tear down the pipeline if it fails at this point
         case _ => throw new InstantiationException(s"Failed to create a task with ID ${taskId}")
       }
-    }
-    taskIds.toList
+    }*/
+    Future.sequence(actionTasks.map(id => pipelineCreateTask(graph, pipelineId, id)))
+      .flatMap(ids => faas.createSequence(pipelineId, ids))
+
+    // taskIds.toList
   }
 
   /**
