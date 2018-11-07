@@ -153,8 +153,6 @@ class WskService @Inject() (
     }
     // Posting a request using the constructed body and retrieves the task name only
     def futureRequest(body: JsValue): Future[String] = {
-      println("before requesting", appName, taskType, taskName, (body \ "exec" \ "kind"))
-
       // TODO: Abstract api, v1, guest, actions
       ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/${id}-${appName}-${taskType}-${taskName}")
       .withHttpHeaders("Accept" -> "application/json")
@@ -162,13 +160,7 @@ class WskService @Inject() (
       .put(body)
       .map(rawResult => {
         val jsonBody:JsValue = Json.parse(rawResult.body)
-        // Fails here too!
-        try {
-          (jsonBody \ "name").as[String]
-        } catch {
-          case ex: JsResultException => throw ex
-        }
-
+        (jsonBody \ "name").as[String]
       })
     }
     constructPostBody.flatMap(body => futureRequest(body))
@@ -199,8 +191,6 @@ class WskService @Inject() (
         .put(body)
         .map(rawResult => {
           val jsonBody:JsValue = Json.parse(rawResult.body)
-          println("checking jsonbody sequence create", taskIds, body, jsonBody, seqId)
-          // Fails here!
           (jsonBody \ "name").as[String]
         })
     }
