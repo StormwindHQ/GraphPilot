@@ -120,8 +120,6 @@ class PipelineController @Inject()(
     }
   }
 
-  // Useful methods
-
   /**
     * Creates a list of Future sequences that looks like
     *

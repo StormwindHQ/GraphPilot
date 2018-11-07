@@ -93,7 +93,7 @@ class WskService @Inject() (
     * @return Future<String>
     */
   override def listNamespaces(): Future[String] = {
-    // TODO: String interpolation + abstracted value
+    // TODO: abstract api, v1, namespaces
     ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces")
       .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
       .get()
@@ -149,6 +149,7 @@ class WskService @Inject() (
     def futureRequest(body: JsValue): Future[String] = {
       println("before requesting", appName, taskType, taskName, (body \ "exec" \ "kind"))
 
+      // TODO: Abstract api, v1, guest, actions
       ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/${id}-${appName}-${taskType}-${taskName}")
       .withHttpHeaders("Accept" -> "application/json")
       .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
@@ -182,6 +183,7 @@ class WskService @Inject() (
       ))
     }
     def futureRequest(body: JsValue): Future[String] = {
+      // TODO: Abstract api, v1, guest, actions, sequenceAction
       ws.url(s"https://${config.WHISK_HOST}/api/v1/namespaces/guest/actions/sequenceAction")
         .withHttpHeaders("Accept" -> "application/json")
         .withAuth(config.WHISK_USER, config.WHISK_PASS, WSAuthScheme.BASIC)
