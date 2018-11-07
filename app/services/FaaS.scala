@@ -1,10 +1,14 @@
 package services
-import javax.inject._
-import scala.concurrent.ExecutionContext
 
-import scala.concurrent.{ Future, Await }
-import scala.util.{ Success, Failure }
+import javax.inject._
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success}
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import play.api.libs.ws._
+import play.api.libs.ws.ahc._
 import play.api.http.HttpEntity
 import play.api.libs.json._
 import utils.ConfigUtil
@@ -89,11 +93,16 @@ trait FaaS {
   * @param executionContext
   */
 @Singleton
-class WskService @Inject() (
-  ws: WSClient,
-  fs: FileSystem,
-  config: ConfigUtil,
-)(implicit executionContext: ExecutionContext) extends FaaS {
+class WskService (implicit executionContext: ExecutionContext) extends FaaS {
+  // Create Akka system for thread and streaming management
+  implicit val system = ActorSystem()
+  system.registerOnTermination {
+    System.exit(0)
+  }
+  implicit val materializer = ActorMaterializer()
+  val ws = StandaloneAhcWSClient()
+  val fs = new FileSystem
+  val config = new ConfigUtil
   /**
     * Get available name spaces in the OpenWhisk instance
     * @return Future<String>
