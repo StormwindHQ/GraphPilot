@@ -16,7 +16,7 @@ import play.filters.csrf.CSRF.Token
 import play.api.libs.json._
 import models.Pipeline
 import play.api.libs.ws._
-import consts.{ MultipleTaskNodeException, PipelineCreationException }
+import consts.{ MultipleTaskNodeException }
 import services.{ WskService, TaskKind }
 import utils.{ GraphUtil }
 import scala.collection.mutable.ListBuffer
@@ -106,7 +106,7 @@ class PipelineController @Inject()(
         // Constructing pipeline ID
         val seqId = s"seq${index}"
         val pipelineId = s"${pipelineName}-${seqId}"
-        createSequence(graph, pipelineId, sequence)
+        pipelineCreateSequence(graph, pipelineId, sequence)
       }
     }
 
@@ -131,7 +131,7 @@ class PipelineController @Inject()(
     * @param pipelineId - Unique ID for the pipeline
     * @param sequence - List of task IDs of the sequence
     */
-  def createSequence(graph: JsValue, pipelineId: String, sequence: List[String]): Future[List[String]] = Future {
+  def pipelineCreateSequence(graph: JsValue, pipelineId: String, sequence: List[String]): Future[List[String]] = Future {
 
     // List of action task IDs
     val actionTasks = sequence
@@ -143,7 +143,8 @@ class PipelineController @Inject()(
       val createTaskResult = Await.result(pipelineCreateTask(graph, pipelineId, taskId), Duration.Inf)
       createTaskResult match {
         case x: String => taskIds = taskIds += x
-        case _ => throw new PipelineCreationException
+        // TODO: It should tear down the pipeline if it fails at this point
+        case _ => throw new InstantiationException(s"Failed to create a task with ID ${taskId}")
       }
     }
     taskIds.toList
@@ -171,7 +172,7 @@ class PipelineController @Inject()(
       rawTaskSearch.head
     }
 
-    // Create the task accordingly
+    // Create an OpenWhisk action based on the task JSON value
     def createTask(task: JsValue): Future[String] = {
       faas.createTask(
         id=pipelineId,
@@ -183,7 +184,12 @@ class PipelineController @Inject()(
       )
     }
 
-    findTask.flatMap(task => createTask(task))
+    findTask.flatMap(task => {
+      task match {
+        case x: JsValue => createTask(x)
+        case _ => throw new NullPointerException(s"Failed to find a task according to the task ID ${taskId}")
+      }
+    })
   }
 
 }
